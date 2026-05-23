@@ -19,6 +19,7 @@ Built to:
 
 ## Modules
 
+### SEO intelligence (8)
 | # | Module | What it does | Output |
 |---|--------|--------------|--------|
 | 1 | `ai_citation_tracker`     | Queries Perplexity / Google AI Overview / Bing Copilot for target prompts, extracts cited URLs and competitors. | `data/citations_*.csv` |
@@ -30,13 +31,32 @@ Built to:
 | 7 | `brand_mention_monitor`   | Tracks brand + competitor mentions across the web, flags unlinked mentions. | `data/mentions_*.csv` |
 | 8 | `ai_overview_monitor`     | Monitors which of your URLs appear in Google AI Overviews / Perplexity for tracked queries. | `data/ai_overview_*.csv` |
 
+### Off-page automation (4)
+| #  | Module | What it does | Output |
+|----|--------|--------------|--------|
+| 9  | `citation_builder`     | Generates NAP-consistent submission packet, checks 26 AU directories (True Local, Yellow Pages, ProductReview, Trustpilot, ASIAL, ABN, etc.), queues missing listings ranked by priority. | `data/citation_packet.md` + `data/citation_status_*.csv` + `data/citation_submission_queue_*.csv` |
+| 10 | `broken_link_builder`  | Scans competitor backlink sources, tests every outbound link, drafts replacement-pitch emails for any 404s where our content fits. | `data/broken_links_*.csv` + `data/emails/broken-link-*.txt` |
+| 11 | `haro_responder`       | Pulls SourceBottle RSS + HARO inbox drops, scores topical fit, drafts AU-security-expert quotes for high-fit queries. | `data/haro_responses_*.csv` + `data/emails/haro-*.txt` |
+| 12 | `review_monitor`       | Pulls Google Business + ProductReview.com.au + Trustpilot reviews, drafts owner replies. | `data/reviews_*.csv` + `data/emails/review-reply-*.txt` |
+
 ## Publishers
 
 | Target | Mode | File |
 |--------|------|------|
-| WordPress (your site) | **Auto-publish** via REST API | `publishers/wordpress.py` |
-| Medium                | Draft export (Medium API deprecated) | `publishers/medium_draft.py` |
-| LinkedIn / X / Reddit / Facebook | Draft queue for human approval (ToS-safe) | `publishers/social_drafts.py` |
+| WordPress (canonical home) | **Auto-publish** via REST API + Application Passwords | `publishers/wordpress.py` |
+| Dev.to | **Auto-publish** with canonical pointing to WP | `publishers/devto.py` |
+| Hashnode | **Auto-publish** with canonical pointing to WP | `publishers/hashnode.py` |
+| LinkedIn (Article share) | **Auto-publish** via UGC API | `publishers/linkedin_articles.py` |
+| Ghost (any self-hosted) | **Auto-publish** via Admin API | `publishers/ghost.py` |
+| Blogger | **Auto-publish** via Google API | `publishers/blogger.py` |
+| Medium | Draft export (API deprecated 2023) | `publishers/medium_draft.py` |
+| LinkedIn post / X / Reddit / Facebook | Draft queue for human approval (ToS-safe) | `publishers/social_drafts.py` |
+| **All-of-the-above fan-out** | One command publishes everywhere configured | `publishers/multi_platform.py` |
+
+```bash
+# Publish to every platform with creds set; WP becomes canonical:
+python run.py fanout data/briefs/cctv-monitoring-sydney.md --status draft
+```
 
 ---
 

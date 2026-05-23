@@ -28,20 +28,28 @@ def _module_runners() -> Dict[str, Callable]:
         ai_citation_tracker, competitor_analyzer, topical_cluster_generator,
         entity_seo_builder, guest_post_outreach, digital_pr_generator,
         brand_mention_monitor, ai_overview_monitor,
+        citation_builder, broken_link_builder, haro_responder, review_monitor,
     )
     from workflows import daily, weekly
     return {
-        "citations":   ai_citation_tracker.run,
-        "competitors": competitor_analyzer.run,
-        "clusters":    topical_cluster_generator.run,
-        "entities":    entity_seo_builder.run,
-        "outreach":    guest_post_outreach.run,
-        "pr":          digital_pr_generator.run,
-        "mentions":    brand_mention_monitor.run,
-        "overviews":   ai_overview_monitor.run,
-        "daily":       daily.run,
-        "weekly":      weekly.run,
-        "all":         lambda: (daily.run(), weekly.run()),
+        # SEO intelligence
+        "citations":     ai_citation_tracker.run,
+        "competitors":   competitor_analyzer.run,
+        "clusters":      topical_cluster_generator.run,
+        "entities":      entity_seo_builder.run,
+        "outreach":      guest_post_outreach.run,
+        "pr":            digital_pr_generator.run,
+        "mentions":      brand_mention_monitor.run,
+        "overviews":     ai_overview_monitor.run,
+        # Off-page automation
+        "biz-citations": citation_builder.run,
+        "broken-links":  broken_link_builder.run,
+        "haro":          haro_responder.run,
+        "reviews":       review_monitor.run,
+        # Workflows
+        "daily":         daily.run,
+        "weekly":        weekly.run,
+        "all":           lambda: (daily.run(), weekly.run()),
     }
 
 
@@ -50,7 +58,9 @@ def main() -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("list", help="List available commands")
     for cmd in ("citations", "competitors", "clusters", "entities", "outreach",
-                "pr", "mentions", "overviews", "daily", "weekly", "all"):
+                "pr", "mentions", "overviews",
+                "biz-citations", "broken-links", "haro", "reviews",
+                "daily", "weekly", "all"):
         sub.add_parser(cmd, help=f"Run the '{cmd}' module/workflow")
 
     pub = sub.add_parser("publish", help="Publish a brief to WordPress")
@@ -63,6 +73,10 @@ def main() -> int:
     med = sub.add_parser("medium", help="Export brief as Medium import file")
     med.add_argument("path")
 
+    fan = sub.add_parser("fanout", help="Publish brief to ALL configured platforms (WordPress canonical)")
+    fan.add_argument("path")
+    fan.add_argument("--status", default="draft", choices=["draft", "publish"])
+
     args = parser.parse_args()
 
     if args.cmd == "list":
@@ -71,6 +85,7 @@ def main() -> int:
         print("  - publish <brief_path> [--status draft|publish]")
         print("  - social  <brief_path>")
         print("  - medium  <brief_path>")
+        print("  - fanout  <brief_path> [--status draft|publish]   (WordPress + Dev.to + Hashnode + LinkedIn + Ghost + Blogger)")
         return 0
 
     if args.cmd == "publish":
@@ -87,6 +102,13 @@ def main() -> int:
     if args.cmd == "medium":
         from publishers.medium_draft import export
         export(args.path)
+        return 0
+
+    if args.cmd == "fanout":
+        from publishers.multi_platform import fanout
+        results = fanout(args.path, status=args.status)
+        for k, v in results.items():
+            print(f"  {k}: {v}")
         return 0
 
     runners = _module_runners()
