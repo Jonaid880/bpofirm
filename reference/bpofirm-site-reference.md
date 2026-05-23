@@ -366,6 +366,26 @@ Right column:
 
 ---
 
-## 9. Environment limitation
+## 9. Theme-build artefacts shipped to the repo
+
+| Artefact | Path | Purpose |
+|---|---|---|
+| WP plugin — service-page blocks | `wp-content/plugins/bpofirm-scroll-hero/` | Registers `[bpofirm_scroll_hero]` (main banner) and `[bpofirm_integrations]` (carousel) shortcodes. |
+| Service-page rollout list | `reference/scroll-hero-rollout.md` | All 44 service pages with pre-filled shortcodes + progress tracker. |
+| Plugin docs | `wp-content/plugins/bpofirm-scroll-hero/README.md` | Install + per-attribute reference + behaviour notes. |
+
+Service-page layout (every one of the 44 service pages) is now:
+
+```
+┌────────────────────────────────────────────┐
+│ [bpofirm_scroll_hero …]   ← main banner    │
+├────────────────────────────────────────────┤
+│ [bpofirm_integrations]    ← directly below │
+├────────────────────────────────────────────┤
+│ existing page content                      │
+└────────────────────────────────────────────┘
+```
+
+## 10. Environment limitation
 
 Direct outbound fetch of `bpofirm.com` (and `web.archive.org`, `google.com`) is blocked from this sandbox by the network policy (`x-deny-reason: host_not_allowed`). Page content is therefore being captured by paste (URL + body HTML / text / screenshot) from the site owner.

@@ -1,0 +1,196 @@
+/* BPO Firm — Integrations Carousel
+ * Vanilla CSS port of the IntegrationHero React component.
+ * Two rows of icon "chips" scrolling in opposite directions with
+ * fade-out gradient masks on both sides.
+ */
+
+.bpo-integrations {
+	position: relative;
+	padding: 8rem 0;
+	overflow: hidden;
+	background: #fff;
+	color: #111;
+}
+
+.bpo-integrations__grid-bg {
+	position: absolute;
+	inset: 0;
+	background-image: radial-gradient(circle at center, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+	background-size: 24px 24px;
+	pointer-events: none;
+}
+
+.bpo-integrations__inner {
+	position: relative;
+	max-width: 80rem;
+	margin: 0 auto;
+	padding: 0 1.5rem;
+	text-align: center;
+}
+
+.bpo-integrations__badge {
+	display: inline-block;
+	padding: 0.25rem 0.75rem;
+	margin-bottom: 1rem;
+	font-size: 0.875rem;
+	border: 1px solid #e5e7eb;
+	border-radius: 9999px;
+	background: #fff;
+	color: #111;
+}
+
+.bpo-integrations__title {
+	margin: 0;
+	font-size: clamp(2rem, 4vw, 3.75rem);
+	font-weight: 700;
+	letter-spacing: -0.025em;
+	line-height: 1.1;
+}
+
+.bpo-integrations__lede {
+	max-width: 36rem;
+	margin: 1rem auto 0;
+	font-size: 1.125rem;
+	color: #6b7280;
+}
+
+.bpo-integrations__cta {
+	display: inline-block;
+	margin-top: 2rem;
+	padding: 0.75rem 1.5rem;
+	font-weight: 500;
+	color: #fff;
+	background: #000;
+	border-radius: 0.5rem;
+	text-decoration: none;
+	transition: background 0.2s ease;
+}
+
+.bpo-integrations__cta:hover,
+.bpo-integrations__cta:focus {
+	background: #1f2937;
+	color: #fff;
+}
+
+.bpo-integrations__carousel {
+	position: relative;
+	margin-top: 3rem;
+	padding-bottom: 0.5rem;
+	overflow: hidden;
+}
+
+.bpo-integrations__row {
+	display: flex;
+	overflow: hidden;
+}
+
+.bpo-integrations__row + .bpo-integrations__row {
+	margin-top: 1.5rem;
+}
+
+.bpo-integrations__track {
+	display: flex;
+	flex-shrink: 0;
+	gap: 2.5rem;
+	white-space: nowrap;
+	will-change: transform;
+}
+
+.bpo-integrations__row--left .bpo-integrations__track {
+	animation: bpo-int-scroll-left 30s linear infinite;
+}
+
+.bpo-integrations__row--right .bpo-integrations__track {
+	animation: bpo-int-scroll-right 30s linear infinite;
+}
+
+.bpo-integrations__chip {
+	flex-shrink: 0;
+	width: 4rem;
+	height: 4rem;
+	border-radius: 9999px;
+	background: #fff;
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition:
+		transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+		box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+		outline-color 0.25s ease,
+		background 0.25s ease;
+	outline: 2px solid transparent;
+	outline-offset: 3px;
+}
+
+.bpo-integrations__chip > img {
+	display: block;
+	height: 2.5rem;
+	width: 2.5rem;
+	object-fit: contain;
+	transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover: lift the chip, glow with brand red, scale up icon */
+.bpo-integrations__chip:hover,
+.bpo-integrations__chip:focus-visible {
+	transform: translateY(-4px) scale(1.08);
+	box-shadow:
+		0 10px 25px -5px rgba(239, 73, 75, 0.35),
+		0 6px 12px -4px rgba(0, 0, 0, 0.15);
+	outline-color: #ef494b;
+	background: #fff;
+}
+
+.bpo-integrations__chip:hover > img,
+.bpo-integrations__chip:focus-visible > img {
+	transform: scale(1.12);
+}
+
+.bpo-integrations__chip:active {
+	transform: translateY(-2px) scale(1.04);
+}
+
+/* Pause the row's scroll when the user is hovering any chip in it,
+ * so the target doesn't slide out from under them. */
+.bpo-integrations__row:hover .bpo-integrations__track,
+.bpo-integrations__row:focus-within .bpo-integrations__track {
+	animation-play-state: paused;
+}
+
+.bpo-integrations__fade {
+	position: absolute;
+	top: 0;
+	height: 100%;
+	width: 6rem;
+	pointer-events: none;
+	z-index: 2;
+}
+
+.bpo-integrations__fade--left {
+	left: 0;
+	background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0));
+}
+
+.bpo-integrations__fade--right {
+	right: 0;
+	background: linear-gradient(to left, #fff, rgba(255, 255, 255, 0));
+}
+
+@keyframes bpo-int-scroll-left {
+	0% { transform: translateX(0); }
+	100% { transform: translateX(-50%); }
+}
+
+@keyframes bpo-int-scroll-right {
+	0% { transform: translateX(-50%); }
+	100% { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.bpo-integrations__row--left .bpo-integrations__track,
+	.bpo-integrations__row--right .bpo-integrations__track {
+		animation: none;
+	}
+}
