@@ -83,6 +83,7 @@ add_shortcode(
 				'date'         => '',
 				'scroll_label' => 'Scroll to Expand',
 				'text_blend'   => '1',
+				'static'       => '0',
 			),
 			$atts,
 			'bpofirm_scroll_hero'
@@ -96,13 +97,14 @@ add_shortcode(
 		$first = $parts[0] ?? '';
 		$rest  = $parts[1] ?? '';
 
-		$blend_class = ( '1' === (string) $atts['text_blend'] ) ? ' bpo-scroll-hero--text-blend' : '';
-		$is_youtube  = $atts['media_src'] && false !== strpos( $atts['media_src'], 'youtube.com' );
+		$blend_class  = ( '1' === (string) $atts['text_blend'] ) ? ' bpo-scroll-hero--text-blend' : '';
+		$static_class = ( '1' === (string) $atts['static'] ) ? ' bpo-scroll-hero--static' : '';
+		$is_youtube   = $atts['media_src'] && false !== strpos( $atts['media_src'], 'youtube.com' );
 
 		ob_start();
 		?>
 		<section
-			class="bpo-scroll-hero<?php echo esc_attr( $blend_class ); ?>"
+			class="bpo-scroll-hero<?php echo esc_attr( $blend_class . $static_class ); ?>"
 			data-media-type="<?php echo esc_attr( $atts['media_type'] ); ?>"
 		>
 			<?php if ( $atts['bg_src'] ) : ?>
@@ -178,9 +180,9 @@ add_shortcode(
 		$atts = shortcode_atts(
 			array(
 				'badge'       => '⚡ Integrations',
-				'title'       => 'Integrate with favorite tools',
-				'description' => '250+ top apps are available to integrate seamlessly with your workflow.',
-				'cta_label'   => 'Get started',
+				'title'       => 'Plays well with your stack',
+				'description' => 'Bring your CRM, helpdesk and telephony — we plug into your existing tools and start shipping outcomes from day one.',
+				'cta_label'   => 'Talk to our team',
 				'cta_url'     => '/contact-us/',
 				'icons_row1'  => implode( ',', $defaults['row1'] ),
 				'icons_row2'  => implode( ',', $defaults['row2'] ),

@@ -10,6 +10,12 @@
 >
 > Placeholder media is intentionally identical across pages — owner will swap `media_src` and `bg_src` per page when imagery is ready.
 
+> **Recommendation on scroll-hijack scope.** The dynamic scroll-expand effect is signature on first impression but irritating on repeat visits — and forcing it on every sibling-page navigation (e.g. SEO → PPC → Email) is rough. Suggested split:
+> - **7 hub pages** (Digital Marketing + Call Services + the 5 group hubs) → dynamic `[bpofirm_scroll_hero …]` (scroll hijack on).
+> - **37 leaf pages** (every individual service) → add `static="1"` to switch to a non-hijacking banner. Page scrolls normally; the same visual identity, no forced interaction.
+>
+> Both forms accept identical attributes — just add or remove `static="1"`. Owner override welcome; defaults below leave it off so each page matches the original brief.
+
 ---
 
 ## Progress tracker

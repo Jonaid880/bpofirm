@@ -30,6 +30,7 @@ Both blocks are styled to match the bpofirm.com brand (accent red `#ef494b`, blu
 | `date` | `""` | Optional small label above the scroll-prompt. |
 | `scroll_label` | `Scroll to Expand` | Scroll-prompt label. Set to empty string to hide. |
 | `text_blend` | `1` | `1` keeps `mix-blend-mode: difference` on the title (default) — adaptive contrast against both the light page bg and the dark gradient card. Set to `0` to force the flat blue-200 colour. |
+| `static` | `0` | Set to `1` to render the banner without scroll-hijacking. Use on leaf service pages where forcing every visitor to scroll-expand on every navigation would be frustrating. Page scroll behaves normally; section sits at 60vh tall. |
 
 Content between the opening / closing tags becomes the post-expand body (hidden until expansion completes):
 

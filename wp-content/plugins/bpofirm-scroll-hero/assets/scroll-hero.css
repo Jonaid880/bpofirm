@@ -161,6 +161,21 @@
 	}
 }
 
+/* Static mode — no scroll hijack. Used on leaf service pages where users
+ * navigate between many siblings and don't want a forced expand on each
+ * page. The JS skips event-listener attachment when this class is present;
+ * here we just shrink the section so it behaves as a normal banner. */
+.bpo-scroll-hero--static {
+	min-height: auto;
+}
+.bpo-scroll-hero--static .bpo-scroll-hero__stage {
+	min-height: 60vh;
+}
+/* "Scroll to Expand" makes no sense when there's nothing to expand. */
+.bpo-scroll-hero--static .bpo-scroll-hero__scroll-label {
+	display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.bpo-scroll-hero__bg,
 	.bpo-scroll-hero__media-overlay,

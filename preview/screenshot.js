@@ -34,6 +34,19 @@ const mobile  = { width: 390,  height: 844 };
 				path: path.join(OUT, `${prefix}-hero-${s.name}.png`),
 			});
 		}
+
+		// Static variant — opt-out of scroll hijack (used on leaf service pages).
+		await page.evaluate(() => {
+			window.__setHeroProgress(0);
+			var hero = document.getElementById('hero');
+			hero.classList.add('bpo-scroll-hero--static');
+			document.getElementById('preview-label').textContent = 'Hero — static (no scroll hijack)';
+		});
+		await page.waitForTimeout(400);
+		await page.locator('#hero').screenshot({
+			path: path.join(OUT, `${prefix}-hero-static.png`),
+		});
+
 		await ctx.close();
 	}
 

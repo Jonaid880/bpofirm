@@ -31,6 +31,10 @@
 		if (root.__bpoScrollHeroInit) return;
 		root.__bpoScrollHeroInit = true;
 
+		// Static mode opts out of scroll hijack entirely — the section
+		// just sits there as a normal banner and the page scrolls past.
+		if (root.classList.contains('bpo-scroll-hero--static')) return;
+
 		var mediaType = root.getAttribute('data-media-type') || 'image';
 		var overlayBase = mediaType === 'video' ? 0.5 : 0.7;
 
