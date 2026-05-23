@@ -1,0 +1,22 @@
+Subject: {{subject}}
+
+Hi {{first_name}},
+
+I came across {{site}} while researching {{topic}} for {{australian_audience}}.
+
+We run securityblogs.com.au — an independent Australian resource on
+{{focus_area}}. I noticed your recent piece on {{their_recent_topic}} and
+thought a follow-up angle could land well with your readers:
+
+  • {{idea_1}}
+  • {{idea_2}}
+  • {{idea_3}}
+
+Happy to write a 1,200-word original draft with original data from
+{{data_source}}. No AI fluff, all referenced.
+
+Worth a quick reply if interested?
+
+— {{author_name}}
+   {{author_title}}, SecurityBlogs Australia
+   {{site_url}}

@@ -1,0 +1,21 @@
+# Core
+anthropic>=0.39.0
+python-dotenv>=1.0.1
+pyyaml>=6.0.2
+requests>=2.32.3
+beautifulsoup4>=4.12.3
+lxml>=5.3.0
+
+# Crawling / SERP
+playwright>=1.49.0
+feedparser>=6.0.11
+
+# Data
+pandas>=2.2.3
+
+# Publishing
+python-wordpress-xmlrpc>=2.3      # legacy XML-RPC fallback; primary path uses REST
+
+# CLI
+click>=8.1.7
+rich>=13.9.4

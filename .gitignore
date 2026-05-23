@@ -46,3 +46,12 @@ wp-config.php
 # Note: If you wish to whitelist themes,
 # uncomment the next line
 #/wp-content/themes
+
+# ---------- seo-bot ----------
+seo-bot/.env
+seo-bot/.venv/
+seo-bot/__pycache__/
+seo-bot/**/__pycache__/
+seo-bot/data/*
+!seo-bot/data/.gitkeep
+seo-bot/*.egg-info/

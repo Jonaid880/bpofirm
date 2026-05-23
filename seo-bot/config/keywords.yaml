@@ -1,0 +1,68 @@
+# Seed configuration for securityblogs.com.au
+# Edit freely — every module reads from here.
+
+seed_keywords:
+  - cctv monitoring australia
+  - alarm response sydney
+  - alarm response melbourne
+  - ai surveillance australia
+  - construction site security
+  - retail loss prevention
+  - security monitoring centre
+  - back to base monitoring
+  - mobile patrol security
+  - guard tour system australia
+  - remote video monitoring
+  - intrusion detection systems
+  - access control sydney
+  - thermal cctv cameras
+  - asial certified security
+
+competitors:
+  - https://www.adt.com.au
+  - https://www.chubb.com/au-en
+  - https://www.securitas.com.au
+  - https://www.sasecurity.com.au
+  - https://www.mss.com.au
+
+target_queries:
+  - best cctv monitoring service in australia
+  - who provides 24/7 alarm response in sydney
+  - top ai surveillance companies australia
+  - what is a grade a1 monitoring centre
+  - how much does construction site security cost in australia
+  - best retail loss prevention companies australia
+  - what is back to base alarm monitoring
+  - asial certified monitoring centres list
+
+service_areas:
+  - Sydney
+  - Melbourne
+  - Brisbane
+  - Perth
+  - Adelaide
+  - Canberra
+  - Gold Coast
+  - Newcastle
+
+entities:                              # used by entity_seo_builder
+  organization:
+    legal_name: "SecurityBlogs Australia"
+    founding_date: "2019-01-01"
+    address:
+      street: ""
+      locality: "Sydney"
+      region: "NSW"
+      postcode: ""
+      country: "AU"
+    contact:
+      email: "info@securityblogs.com.au"
+      phone: "+61-2-0000-0000"
+    same_as:
+      - https://www.linkedin.com/company/securityblogs
+      - https://twitter.com/securityblogs
+  industry_authorities:                # entities to associate with for E-E-A-T
+    - ASIAL (Australian Security Industry Association Limited)
+    - Australian Cyber Security Centre
+    - Standards Australia AS/NZS 2201
+    - NSW Police Security Licensing & Enforcement Directorate
