@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>BPO Firm — Service-Page Blocks preview</title>
+	<link rel="stylesheet" href="../wp-content/plugins/bpofirm-scroll-hero/assets/scroll-hero.css">
+	<link rel="stylesheet" href="../wp-content/plugins/bpofirm-scroll-hero/assets/integrations.css">
+	<style>
+		html, body { margin: 0; padding: 0; background: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+		.preview-label {
+			position: fixed; top: 12px; left: 12px; z-index: 9999;
+			padding: 6px 10px; border-radius: 6px;
+			background: rgba(0,0,0,0.75); color: #fff;
+			font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+			pointer-events: none;
+		}
+	</style>
+</head>
+<body>
+	<div class="preview-label" id="preview-label">Initial state</div>
+
+	<!-- This mirrors the HTML the [bpofirm_scroll_hero] shortcode emits.
+	     For the offline preview we use inline-SVG data URIs; the live
+	     plugin keeps the real bpofirm.com CDN URLs (see PHP defaults). -->
+	<section class="bpo-scroll-hero" data-media-type="image" id="hero">
+		<img class="bpo-scroll-hero__bg" id="hero-bg" alt="" />
+		<div class="bpo-scroll-hero__bg-tint" aria-hidden="true"></div>
+		<div class="bpo-scroll-hero__stage">
+			<div class="bpo-scroll-hero__media">
+				<img id="hero-fg" alt="Lead Generation" />
+				<div class="bpo-scroll-hero__media-overlay" aria-hidden="true"></div>
+			</div>
+			<div class="bpo-scroll-hero__title">
+				<h1 class="bpo-scroll-hero__title-first">Lead</h1>
+				<h1 class="bpo-scroll-hero__title-rest">Generation</h1>
+			</div>
+			<div class="bpo-scroll-hero__caption">
+				<p class="bpo-scroll-hero__scroll-label">Scroll to Expand</p>
+			</div>
+		</div>
+	</section>
+
+	<!-- This mirrors the HTML the [bpofirm_integrations] shortcode emits. -->
+	<section class="bpo-integrations" id="integrations">
+		<div class="bpo-integrations__grid-bg" aria-hidden="true"></div>
+		<div class="bpo-integrations__inner">
+			<span class="bpo-integrations__badge">⚡ Integrations</span>
+			<h2 class="bpo-integrations__title">Integrate with favorite tools</h2>
+			<p class="bpo-integrations__lede">250+ top apps are available to integrate seamlessly with your workflow.</p>
+			<a class="bpo-integrations__cta" href="#">Get started</a>
+			<div class="bpo-integrations__carousel" aria-label="Supported integrations">
+				<div class="bpo-integrations__row bpo-integrations__row--left">
+					<div class="bpo-integrations__track" id="track-1"></div>
+				</div>
+				<div class="bpo-integrations__row bpo-integrations__row--right">
+					<div class="bpo-integrations__track" id="track-2"></div>
+				</div>
+				<div class="bpo-integrations__fade bpo-integrations__fade--left" aria-hidden="true"></div>
+				<div class="bpo-integrations__fade bpo-integrations__fade--right" aria-hidden="true"></div>
+			</div>
+		</div>
+	</section>
+
+	<script>
+		// --- Offline placeholder assets (preview only) ----------------------
+		// Sandbox can't reach external image hosts (network policy returns
+		// 403 on Flaticon / bpofirm CDN). The live WP plugin still references
+		// the real URLs — these inline data URIs exist solely so this preview
+		// page renders meaningfully in the screenshot harness.
+		function svgUri(svg) {
+			return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+		}
+		// Dotted world-map placeholder for the hero background.
+		document.getElementById('hero-bg').src = svgUri(
+			'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 491" preserveAspectRatio="xMidYMid slice">' +
+				'<defs>' +
+					'<pattern id="d" width="10" height="10" patternUnits="userSpaceOnUse">' +
+						'<circle cx="5" cy="5" r="1.5" fill="#cbd5e1"/>' +
+					'</pattern>' +
+					'<radialGradient id="g" cx="50%" cy="50%" r="60%">' +
+						'<stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>' +
+						'<stop offset="100%" stop-color="#ffffff" stop-opacity="0.4"/>' +
+					'</radialGradient>' +
+				'</defs>' +
+				'<rect width="100%" height="100%" fill="#f1f5f9"/>' +
+				'<rect width="100%" height="100%" fill="url(#d)"/>' +
+				'<rect width="100%" height="100%" fill="url(#g)"/>' +
+			'</svg>'
+		);
+		// Brand-gradient foreground placeholder (stands in for the real photo).
+		document.getElementById('hero-fg').src = svgUri(
+			'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice">' +
+				'<defs>' +
+					'<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">' +
+						'<stop offset="0%" stop-color="#ef494b"/>' +
+						'<stop offset="100%" stop-color="#1d4ed8"/>' +
+					'</linearGradient>' +
+				'</defs>' +
+				'<rect width="100%" height="100%" fill="url(#bg)"/>' +
+				'<circle cx="300" cy="290" r="90" fill="#ffffff" opacity="0.18"/>' +
+				'<rect x="170" y="400" width="260" height="280" rx="20" fill="#ffffff" opacity="0.18"/>' +
+				'<text x="300" y="160" text-anchor="middle" font-family="system-ui,sans-serif" font-size="56" font-weight="800" fill="#ffffff" opacity="0.95">BPO Firm</text>' +
+				'<text x="300" y="745" text-anchor="middle" font-family="system-ui,sans-serif" font-size="22" font-weight="500" fill="#ffffff" opacity="0.75">placeholder · swap per page</text>' +
+			'</svg>'
+		);
+		// Generate 14 chip icons — coloured circles with single-letter glyphs.
+		function chipIcon(letter, fill) {
+			return svgUri(
+				'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
+					'<circle cx="32" cy="32" r="28" fill="' + fill + '"/>' +
+					'<text x="32" y="42" text-anchor="middle" font-family="system-ui,sans-serif" font-size="28" font-weight="700" fill="#ffffff">' + letter + '</text>' +
+				'</svg>'
+			);
+		}
+		var ROW1 = [
+			chipIcon('f', '#1877f2'), // facebook-blue
+			chipIcon('W', '#25d366'), // whatsapp-green
+			chipIcon('t', '#1da1f2'), // twitter-blue
+			chipIcon('in','#0a66c2'), // linkedin
+			chipIcon('IG','#e1306c'), // instagram-pink
+			chipIcon('▶', '#ff0000'), // youtube-red
+			chipIcon('@', '#ea4335'), // gmail-red
+		];
+		var ROW2 = [
+			chipIcon('S', '#36c5f0'), // slack
+			chipIcon('H', '#ff7a59'), // hubspot
+			chipIcon('Z', '#03363d'), // zendesk
+			chipIcon('SF','#00a1e0'), // salesforce
+			chipIcon('N', '#ff5a5f'), // notion-ish
+			chipIcon('A', '#5865f2'), // discord
+			chipIcon('M', '#0078d4'), // microsoft
+		];
+		function fillTrack(id, icons, repeat) {
+			var el = document.getElementById(id);
+			var html = '';
+			for (var r = 0; r < repeat; r++) {
+				for (var i = 0; i < icons.length; i++) {
+					html += '<div class="bpo-integrations__chip"><img src="' + icons[i] + '" alt="" loading="lazy"></div>';
+				}
+			}
+			el.innerHTML = html;
+		}
+		fillTrack('track-1', ROW1, 4);
+		fillTrack('track-2', ROW2, 4);
+
+		// Helper used by the screenshot script to force a specific scroll-hero
+		// progress without having to actually scroll-hijack the page.
+		window.__setHeroProgress = function (progress) {
+			var hero = document.getElementById('hero');
+			var mobile = window.innerWidth < 768;
+			var w = 300 + progress * (mobile ? 650 : 1250);
+			var h = 400 + progress * (mobile ? 200 : 400);
+			var tx = progress * (mobile ? 180 : 150);
+			hero.style.setProperty('--bpo-media-w', w + 'px');
+			hero.style.setProperty('--bpo-media-h', h + 'px');
+			hero.style.setProperty('--bpo-text-tx', tx);
+			hero.style.setProperty('--bpo-bg-opacity', 1 - progress);
+			hero.style.setProperty('--bpo-overlay-opacity', 0.7 - progress * 0.3);
+			hero.classList.toggle('is-expanded', progress >= 1);
+		};
+		window.__setHeroProgress(0);
+	</script>
+</body>
+</html>
