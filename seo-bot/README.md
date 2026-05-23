@@ -72,8 +72,9 @@ python run.py citations    # run AI citation tracker
 python run.py all          # run full daily workflow
 ```
 
-See [SETUP.md](SETUP.md) for full installation, API key sourcing, scheduling
-(cron / GitHub Actions) and publishing setup.
+See [SETUP.md](SETUP.md) for full installation + API key sourcing, and
+[GITHUB_ACTIONS.md](GITHUB_ACTIONS.md) for zero-server scheduled runs
+(daily + weekly cron, manual triggers, artifact downloads).
 
 ---
 

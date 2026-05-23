@@ -1,0 +1,152 @@
+# Scheduled + on-demand runs of the SecurityBlogs SEO bot.
+#
+# Schedules use UTC. Sydney is UTC+10 (AEST) / UTC+11 (AEDT, Oct-Apr).
+#   daily   06:00 UTC = 16:00 AEST / 17:00 AEDT
+#   weekly  Mon 19:00 UTC = Tue 05:00 AEST / 06:00 AEDT
+#
+# All generated CSVs/briefs/schema/emails are uploaded as a workflow artifact
+# (retained 30 days). For permanent storage, switch to the optional
+# 'commit-artifacts' step at the bottom and grant the workflow `contents: write`.
+
+name: seo-bot
+
+on:
+  schedule:
+    - cron: "0 6 * * *"          # daily 06:00 UTC
+    - cron: "0 19 * * 1"         # weekly Mon 19:00 UTC
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "Which run.py command to execute"
+        required: true
+        default: "daily"
+        type: choice
+        options:
+          - daily
+          - weekly
+          - all
+          - citations
+          - competitors
+          - clusters
+          - entities
+          - outreach
+          - pr
+          - mentions
+          - overviews
+          - biz-citations
+          - broken-links
+          - haro
+          - reviews
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: seo-bot
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: seo-bot/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Decide command
+        id: cmd
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            if [ "${{ github.event.schedule }}" = "0 19 * * 1" ]; then
+              echo "value=weekly" >> "$GITHUB_OUTPUT"
+            else
+              echo "value=daily" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "value=${{ inputs.command }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run seo-bot
+        env:
+          # Required
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Site
+          SITE_URL: ${{ vars.SITE_URL || 'https://securityblogs.com.au' }}
+          SITE_NAME: ${{ vars.SITE_NAME || 'SecurityBlogs' }}
+          BRAND_NAMES: ${{ vars.BRAND_NAMES || 'SecurityBlogs,Security Blogs Australia' }}
+          COUNTRY: AU
+          # Optional providers
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          DATAFORSEO_LOGIN: ${{ secrets.DATAFORSEO_LOGIN }}
+          DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
+          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+          AHREFS_API_KEY: ${{ secrets.AHREFS_API_KEY }}
+          # WordPress
+          WORDPRESS_URL: ${{ secrets.WORDPRESS_URL }}
+          WORDPRESS_USER: ${{ secrets.WORDPRESS_USER }}
+          WORDPRESS_APP_PASSWORD: ${{ secrets.WORDPRESS_APP_PASSWORD }}
+          # Multi-platform publishers
+          DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
+          HASHNODE_API_KEY: ${{ secrets.HASHNODE_API_KEY }}
+          HASHNODE_PUBLICATION_ID: ${{ secrets.HASHNODE_PUBLICATION_ID }}
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_AUTHOR_URN: ${{ secrets.LINKEDIN_AUTHOR_URN }}
+          GHOST_ADMIN_URL: ${{ secrets.GHOST_ADMIN_URL }}
+          GHOST_ADMIN_API_KEY: ${{ secrets.GHOST_ADMIN_API_KEY }}
+          BLOGGER_OAUTH_TOKEN: ${{ secrets.BLOGGER_OAUTH_TOKEN }}
+          BLOGGER_BLOG_ID: ${{ secrets.BLOGGER_BLOG_ID }}
+          # Reviews
+          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+          GOOGLE_PLACE_ID: ${{ secrets.GOOGLE_PLACE_ID }}
+          PRODUCTREVIEW_SLUG: ${{ vars.PRODUCTREVIEW_SLUG }}
+          TRUSTPILOT_DOMAIN: ${{ vars.TRUSTPILOT_DOMAIN }}
+        run: python run.py ${{ steps.cmd.outputs.value }}
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-bot-output-${{ github.run_id }}
+          path: |
+            seo-bot/data/**/*.csv
+            seo-bot/data/**/*.md
+            seo-bot/data/**/*.json
+            seo-bot/data/**/*.txt
+            seo-bot/data/seo-bot.log
+          retention-days: 30
+          if-no-files-found: warn
+
+  # ------------------------------------------------------------------
+  # Optional: instead of artifacts, commit outputs to a `seo-bot-data`
+  # branch so you can browse historical runs in GitHub. Uncomment + add
+  # `permissions: contents: write` at the top to enable.
+  # ------------------------------------------------------------------
+  # commit-artifacts:
+  #   needs: run
+  #   if: github.event_name == 'schedule'
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: write
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         ref: seo-bot-data
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: seo-bot-output-${{ github.run_id }}
+  #         path: data/
+  #     - name: Commit
+  #       run: |
+  #         git config user.name "seo-bot[bot]"
+  #         git config user.email "seo-bot@users.noreply.github.com"
+  #         git add data/
+  #         git commit -m "Run ${{ github.run_id }} ($(date -u +%F))" || exit 0
+  #         git push
