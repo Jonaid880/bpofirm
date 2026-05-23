@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       BPO Firm Cinematic Hero
  * Plugin URI:        https://bpofirm.com/
- * Description:       Cinematic intro hero with animated keypad → "Access Granted" → interior reveal, inspired by the octaboot.lb Reel and brand-adapted (red accent, golden vignette). Shortcode: [bpofirm_cinematic_hero ...].
- * Version:           0.1.0
+ * Description:       Scroll-driven zoom hero with an interactive 4-digit keypad. Visitor scrolls to zoom in on the keypad, enters the code, sees the interior reveal. Per-office colour theming via shortcode attributes. Shortcode: [bpofirm_cinematic_hero ...].
+ * Version:           0.2.0
  * Requires at least: 6.4
  * Requires PHP:      7.4
  * Author:            BPO Firm
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'BPOFIRM_CINE_URL', plugin_dir_url( __FILE__ ) );
-define( 'BPOFIRM_CINE_VER', '0.1.0' );
+define( 'BPOFIRM_CINE_VER', '0.2.0' );
 
 add_action(
 	'wp_enqueue_scripts',
@@ -27,8 +27,34 @@ add_action(
 			array(),
 			BPOFIRM_CINE_VER
 		);
+		wp_register_script(
+			'bpofirm-cinematic-hero',
+			BPOFIRM_CINE_URL . 'assets/cinematic-hero.js',
+			array(),
+			BPOFIRM_CINE_VER,
+			true
+		);
 	}
 );
+
+/**
+ * Per-office colour theme presets — maps a friendly name to the
+ * `--bpo-cine-accent-rgb` triplet (used for keypad glow, vignette
+ * tint, hint text, granted badge).
+ */
+function bpofirm_cine_theme_preset( $name ) {
+	$presets = array(
+		'warm'    => '255, 195, 100',  // default golden — luxury, hospitality
+		'orange'  => '255, 140, 50',   // matches office #5 (orange creative studio)
+		'blue'    => '120, 170, 255',  // matches office #2 (blue corporate)
+		'sketch'  => '200, 210, 230',  // matches office #3 (sketch render — cool neutral)
+		'social'  => '255, 80, 130',   // matches office #1 (social-media office)
+		'modern'  => '160, 130, 200',  // matches office #4 (modern pods)
+		'red'     => '239, 73, 75',    // brand red itself
+	);
+	$name = strtolower( (string) $name );
+	return isset( $presets[ $name ] ) ? $presets[ $name ] : '';
+}
 
 /**
  * Render an inline-coloured title: words wrapped in pipes become the
@@ -59,29 +85,37 @@ add_shortcode(
 				'cta_primary_url'      => '/contact-us/',
 				'cta_secondary_label'  => 'See our work',
 				'cta_secondary_url'    => '/services/',
-				'code'                 => '1300',
+				'password'             => '1234',
 				'access_label'         => 'Access Granted',
+				'hint_scroll'          => 'Scroll to approach',
+				'hint_enter'           => 'Enter the code',
 				'bg_exterior'          => '',
 				'bg_interior'          => '',
-				'loop'                 => '0',
+				'theme'                => '',
+				'accent_rgb'           => '',
 			),
 			$atts,
 			'bpofirm_cinematic_hero'
 		);
 
 		wp_enqueue_style( 'bpofirm-cinematic-hero' );
+		wp_enqueue_script( 'bpofirm-cinematic-hero' );
 
-		// Build the 4-digit code as data-step keys so the choreography
-		// matches whatever owner sets in the shortcode.
-		$code = preg_replace( '/\D/', '', (string) $atts['code'] );
-		if ( strlen( $code ) !== 4 ) {
-			$code = '1300';
+		$password = preg_replace( '/\D/', '', (string) $atts['password'] );
+		if ( strlen( $password ) !== 4 ) {
+			$password = '1234';
 		}
-		$code_digits = str_split( $code );
 
-		$variant_class = ( '1' === (string) $atts['loop'] ) ? ' bpo-cine--loop' : ' bpo-cine--once';
+		// Resolve colour theme — explicit accent_rgb wins, then theme preset, then default.
+		$accent = trim( (string) $atts['accent_rgb'] );
+		if ( ! $accent && $atts['theme'] ) {
+			$accent = bpofirm_cine_theme_preset( $atts['theme'] );
+		}
 
 		$inline_vars = '';
+		if ( $accent ) {
+			$inline_vars .= '--bpo-cine-accent-rgb:' . esc_attr( $accent ) . ';';
+		}
 		if ( $atts['bg_exterior'] ) {
 			$inline_vars .= '--bpo-cine-exterior:url(' . esc_url_raw( $atts['bg_exterior'] ) . ');';
 		}
@@ -94,37 +128,42 @@ add_shortcode(
 		ob_start();
 		?>
 		<section
-			class="bpo-cine<?php echo esc_attr( $variant_class ); ?>"
+			class="bpo-cine"
+			data-bpo-password="<?php echo esc_attr( $password ); ?>"
 			<?php if ( $inline_vars ) : ?>style="<?php echo esc_attr( $inline_vars ); ?>"<?php endif; ?>
 		>
 			<div class="bpo-cine__bg bpo-cine__bg--exterior" aria-hidden="true"></div>
 			<div class="bpo-cine__bg bpo-cine__bg--interior" aria-hidden="true"></div>
 			<div class="bpo-cine__vignette" aria-hidden="true"></div>
 
-			<div class="bpo-cine__stage" aria-hidden="true">
+			<div class="bpo-cine__stage">
 				<div class="bpo-cine__keypad">
-					<div class="bpo-cine__display">
-						<?php foreach ( $code_digits as $d ) : ?>
-							<span class="digit"><?php echo esc_html( $d ); ?></span>
-						<?php endforeach; ?>
+					<div class="bpo-cine__display" aria-label="<?php esc_attr_e( 'Code entry' ); ?>">
+						<span class="digit">·</span>
+						<span class="digit">·</span>
+						<span class="digit">·</span>
+						<span class="digit">·</span>
 					</div>
-					<div class="bpo-cine__keys">
-						<?php foreach ( $keys as $k ) :
-							$step = array_search( $k, $code_digits, true );
-							// array_search returns the first match — if a digit
-							// appears twice (e.g. '0' in '1300'), step the second
-							// press by detecting duplicates and assigning incrementally.
-							?>
-							<div class="bpo-cine__key<?php echo ( false !== $step ) ? ' is-active' : ''; ?>"<?php
-								if ( false !== $step ) {
-									echo ' data-step="' . ( $step + 1 ) . '"';
-								}
-							?>><?php echo esc_html( $k ); ?></div>
+					<div class="bpo-cine__keys" role="group" aria-label="<?php esc_attr_e( 'Keypad' ); ?>">
+						<?php foreach ( $keys as $k ) : ?>
+							<button
+								type="button"
+								class="bpo-cine__key"
+								data-value="<?php echo esc_attr( $k ); ?>"
+								tabindex="-1"
+							><?php echo esc_html( $k ); ?></button>
 						<?php endforeach; ?>
 					</div>
 				</div>
-				<div class="bpo-cine__granted"><?php echo esc_html( $atts['access_label'] ); ?></div>
+				<div class="bpo-cine__granted" aria-live="polite"><?php echo esc_html( $atts['access_label'] ); ?></div>
 			</div>
+
+			<?php if ( $atts['hint_scroll'] ) : ?>
+				<div class="bpo-cine__hint"><?php echo esc_html( $atts['hint_scroll'] ); ?></div>
+			<?php endif; ?>
+			<?php if ( $atts['hint_enter'] ) : ?>
+				<div class="bpo-cine__hint-2"><?php echo esc_html( $atts['hint_enter'] ); ?></div>
+			<?php endif; ?>
 
 			<div class="bpo-cine__content">
 				<?php if ( $atts['eyebrow'] ) : ?>
