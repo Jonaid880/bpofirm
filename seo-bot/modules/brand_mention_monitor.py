@@ -17,8 +17,8 @@ from __future__ import annotations
 
 from typing import Dict, List
 from urllib.parse import quote_plus, urlparse
+from xml.etree import ElementTree as ET
 
-import feedparser
 from bs4 import BeautifulSoup
 
 from config.settings import settings
@@ -35,13 +35,24 @@ def _our_domain() -> str:
 
 
 def _google_news(query: str) -> List[Dict]:
+    """Fetch Google News RSS and parse with stdlib (no feedparser dep)."""
     url = f"https://news.google.com/rss/search?q={quote_plus(query)}&hl=en-AU&gl=AU&ceid=AU:en"
-    feed = feedparser.parse(url)
-    return [
-        {"source": "google_news", "title": e.get("title", ""), "url": e.get("link", ""),
-         "published": e.get("published", "")}
-        for e in feed.entries[:20]
-    ]
+    r = get(url)
+    if not r or r.status_code != 200:
+        return []
+    try:
+        root = ET.fromstring(r.text)
+    except ET.ParseError:
+        return []
+    out = []
+    for item in root.findall(".//item")[:20]:
+        out.append({
+            "source": "google_news",
+            "title": (item.findtext("title") or "").strip(),
+            "url": (item.findtext("link") or "").strip(),
+            "published": (item.findtext("pubDate") or "").strip(),
+        })
+    return out
 
 
 def _has_link_to_us(page_url: str) -> bool:
