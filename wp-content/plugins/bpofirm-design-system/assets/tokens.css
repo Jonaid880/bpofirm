@@ -1,0 +1,114 @@
+/* BPO Firm — Design System tokens
+ * Dark-portfolio aesthetic adapted from the React reference (single-page
+ * portfolio). All rules scoped under .bpo-dark so the existing
+ * light-themed service pages aren't affected.
+ *
+ * Reference design uses #89AACC -> #4E85BF blue accent gradient; we keep
+ * BPO Firm's brand red #ef494b and pair it with a darker red stop
+ * (#b91c1c) so the gradient-shift animation still reads.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital,wght@1,400&display=swap');
+
+/* ----- Root font + brand tokens (always loaded, no styling impact alone) - */
+:root {
+	--bpo-font-body:    'Inter', system-ui, -apple-system, sans-serif;
+	--bpo-font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+	--bpo-brand:        #ef494b;
+	--bpo-brand-dark:   #b91c1c;
+	--bpo-accent-gradient: linear-gradient(90deg, #ef494b 0%, #b91c1c 100%);
+}
+
+/* ----- Dark-theme scope ------------------------------------------------- */
+.bpo-dark {
+	/* HSL components (no hsl() wrapper — same pattern as the reference). */
+	--bg:      0 0% 4%;
+	--surface: 0 0% 8%;
+	--text:    0 0% 96%;
+	--muted:   0 0% 53%;
+	--stroke:  0 0% 12%;
+
+	background-color: hsl(var(--bg));
+	color: hsl(var(--text));
+	color-scheme: dark;
+	font-family: var(--bpo-font-body);
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Type-scale utility classes (mirrors the reference's font-display + sizes). */
+.bpo-dark .bpo-display {
+	font-family: var(--bpo-font-display);
+	font-style: italic;
+	line-height: 0.9;
+	letter-spacing: -0.01em;
+}
+.bpo-dark .bpo-eyebrow {
+	font-size: 0.75rem;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.3em;
+	color: hsl(var(--muted));
+}
+.bpo-dark .bpo-muted { color: hsl(var(--muted)); }
+.bpo-dark .bpo-surface {
+	background-color: hsl(var(--surface));
+	border: 1px solid hsl(var(--stroke));
+}
+
+/* ----- Accent gradient utilities --------------------------------------- */
+.bpo-accent-gradient {
+	background: var(--bpo-accent-gradient);
+}
+.bpo-accent-gradient-text {
+	background: var(--bpo-accent-gradient);
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+}
+/* Gradient ring (for logo / button hover borders). Wrap the element you
+ * want ringed in a parent with this class; the parent has 2px padding
+ * and the inner element should have the page's bg colour. */
+.bpo-accent-ring {
+	background: var(--bpo-accent-gradient);
+	padding: 2px;
+	border-radius: 9999px;
+	display: inline-block;
+}
+
+/* ----- Custom keyframes ------------------------------------------------- */
+@keyframes bpo-scroll-down {
+	0%   { transform: translateY(-100%); }
+	100% { transform: translateY(200%); }
+}
+@keyframes bpo-role-fade-in {
+	from { opacity: 0; transform: translateY(8px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes bpo-gradient-shift {
+	0%, 100% { background-position: 0% 50%; }
+	50%      { background-position: 100% 50%; }
+}
+
+.bpo-animate-scroll-down {
+	animation: bpo-scroll-down 1.5s ease-in-out infinite;
+}
+.bpo-animate-role-fade-in {
+	animation: bpo-role-fade-in 0.4s ease-out;
+}
+.bpo-animate-gradient-shift {
+	background-size: 200% 200%;
+	animation: bpo-gradient-shift 6s ease infinite;
+}
+
+/* Glow used under the loading-screen progress bar in the reference. */
+.bpo-accent-glow {
+	box-shadow: 0 0 8px rgba(239, 73, 75, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.bpo-animate-scroll-down,
+	.bpo-animate-role-fade-in,
+	.bpo-animate-gradient-shift {
+		animation: none;
+	}
+}

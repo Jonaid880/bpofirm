@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>BPO Firm — Design tokens preview</title>
+	<link rel="stylesheet" href="../wp-content/plugins/bpofirm-design-system/assets/tokens.css">
+	<style>
+		body { margin: 0; padding: 56px 48px 80px; }
+		.grid { display: grid; gap: 48px; max-width: 1200px; margin: 0 auto; }
+		.row { display: grid; grid-template-columns: 200px 1fr; gap: 32px; align-items: start; }
+		.row > h3 { margin: 0; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3em; color: hsl(var(--muted)); padding-top: 8px; }
+		.swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+		.swatch { display: flex; flex-direction: column; gap: 8px; }
+		.swatch .chip { height: 96px; border-radius: 12px; border: 1px solid hsl(var(--stroke)); }
+		.swatch .name { font-size: 12px; color: hsl(var(--text)); font-family: var(--bpo-font-body); }
+		.swatch .val { font-size: 11px; color: hsl(var(--muted)); font-family: ui-monospace, monospace; }
+		.type-stack > * { margin: 0 0 14px; }
+		.btn-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+		.btn-solid {
+			background: hsl(var(--text)); color: hsl(var(--bg));
+			padding: 14px 28px; border-radius: 9999px; font-family: var(--bpo-font-body); font-size: 14px; font-weight: 500;
+			border: 0; cursor: pointer; transition: transform .2s ease;
+		}
+		.btn-solid:hover { transform: scale(1.05); }
+		.btn-ringed { position: relative; padding: 2px; border-radius: 9999px; }
+		.btn-ringed > .inner {
+			background: hsl(var(--bg)); color: hsl(var(--text));
+			padding: 14px 28px; border-radius: 9999px; font-family: var(--bpo-font-body); font-size: 14px; font-weight: 500;
+			display: inline-block;
+		}
+		.bar-track { width: 280px; height: 3px; background: hsl(var(--stroke)); border-radius: 2px; overflow: hidden; }
+		.bar-fill { width: 70%; height: 100%; transform-origin: left center; }
+		.scroll-line { width: 1px; height: 60px; background: hsl(var(--stroke)); position: relative; overflow: hidden; }
+		.scroll-line::after { content: ""; position: absolute; inset: 0; background: hsl(var(--text)); height: 30%; }
+		.gradient-tile {
+			width: 220px; height: 60px; border-radius: 12px;
+			background: linear-gradient(90deg, #ef494b 0%, #b91c1c 50%, #ef494b 100%);
+			background-size: 200% 200%;
+		}
+	</style>
+</head>
+<body class="bpo-dark">
+	<div class="grid">
+
+		<div class="row">
+			<h3>Page surface</h3>
+			<div class="swatches">
+				<div class="swatch"><div class="chip" style="background: hsl(var(--bg))"></div><span class="name">--bg</span><span class="val">0 0% 4%</span></div>
+				<div class="swatch"><div class="chip" style="background: hsl(var(--surface))"></div><span class="name">--surface</span><span class="val">0 0% 8%</span></div>
+				<div class="swatch"><div class="chip" style="background: hsl(var(--text))"></div><span class="name">--text</span><span class="val">0 0% 96%</span></div>
+				<div class="swatch"><div class="chip" style="background: hsl(var(--muted))"></div><span class="name">--muted</span><span class="val">0 0% 53%</span></div>
+				<div class="swatch"><div class="chip" style="background: hsl(var(--stroke))"></div><span class="name">--stroke</span><span class="val">0 0% 12%</span></div>
+			</div>
+		</div>
+
+		<div class="row">
+			<h3>Brand accent</h3>
+			<div class="swatches" style="grid-template-columns: repeat(3, 1fr);">
+				<div class="swatch"><div class="chip" style="background: #ef494b"></div><span class="name">--bpo-brand</span><span class="val">#ef494b</span></div>
+				<div class="swatch"><div class="chip" style="background: #b91c1c"></div><span class="name">--bpo-brand-dark</span><span class="val">#b91c1c</span></div>
+				<div class="swatch"><div class="chip bpo-accent-gradient"></div><span class="name">--bpo-accent-gradient</span><span class="val">red → dark red</span></div>
+			</div>
+		</div>
+
+		<div class="row">
+			<h3>Typography</h3>
+			<div class="type-stack">
+				<p class="bpo-eyebrow" style="margin-bottom: 24px;">COLLECTION '26</p>
+				<h1 class="bpo-display" style="font-size: 6rem; color: hsl(var(--text));">Michael Smith</h1>
+				<p style="font-family: var(--bpo-font-body); font-size: 16px; color: hsl(var(--text));">A <span class="bpo-display" style="font-size: 22px;">Creative</span> lives in Chicago.</p>
+				<p style="font-family: var(--bpo-font-body); font-size: 14px; color: hsl(var(--muted)); max-width: 32rem;">
+					Designing seamless digital interactions by focusing on the unique nuances which bring systems to life.
+				</p>
+			</div>
+		</div>
+
+		<div class="row">
+			<h3>Buttons</h3>
+			<div class="btn-row">
+				<button class="btn-solid">See Works</button>
+				<span class="btn-ringed bpo-accent-gradient"><span class="inner">Reach out…</span></span>
+				<span class="btn-ringed bpo-accent-gradient bpo-animate-gradient-shift"><span class="inner">Say hi ↗︎</span></span>
+			</div>
+		</div>
+
+		<div class="row">
+			<h3>Progress bar</h3>
+			<div>
+				<div class="bar-track">
+					<div class="bar-fill bpo-accent-gradient bpo-accent-glow"></div>
+				</div>
+				<p class="bpo-muted" style="font-family: var(--bpo-font-body); font-size: 11px; margin-top: 12px;">loading screen — 070/100</p>
+			</div>
+		</div>
+
+		<div class="row">
+			<h3>Scroll indicator</h3>
+			<div style="display: flex; flex-direction: column; gap: 12px; align-items: flex-start;">
+				<p class="bpo-eyebrow">SCROLL</p>
+				<div class="scroll-line"><span style="position: absolute; inset: 0; background: hsl(var(--text)); height: 30%;" class="bpo-animate-scroll-down"></span></div>
+			</div>
+		</div>
+
+		<div class="row">
+			<h3>Animated gradient</h3>
+			<div class="gradient-tile bpo-animate-gradient-shift"></div>
+		</div>
+
+		<div class="row">
+			<h3>Surface card</h3>
+			<div class="bpo-surface" style="padding: 24px; border-radius: 24px; max-width: 360px;">
+				<p class="bpo-eyebrow" style="margin: 0 0 12px;">Project</p>
+				<h2 class="bpo-display" style="font-size: 32px; margin: 0 0 8px;">Automotive Motion</h2>
+				<p class="bpo-muted" style="font-family: var(--bpo-font-body); font-size: 14px; margin: 0;">8 min read · 12.03.26</p>
+			</div>
+		</div>
+
+	</div>
+</body>
+</html>

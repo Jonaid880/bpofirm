@@ -8,6 +8,7 @@ const OUT = path.join(__dirname, 'screenshots');
 fs.mkdirSync(OUT, { recursive: true });
 
 const url = 'file://' + path.join(__dirname, 'index.html');
+const tokensUrl = 'file://' + path.join(__dirname, 'design-tokens.html');
 
 const desktop = { width: 1440, height: 900 };
 const mobile  = { width: 390,  height: 844 };
@@ -103,6 +104,19 @@ const mobile  = { width: 390,  height: 844 };
 	console.log('Capturing mobile…');
 	await shootHeroStates(mobile, 'mobile');
 	await shootIntegrations(mobile, 'mobile');
+
+	console.log('Capturing design tokens…');
+	{
+		const ctx = await browser.newContext({ viewport: desktop, deviceScaleFactor: 2 });
+		const page = await ctx.newPage();
+		await page.goto(tokensUrl, { waitUntil: 'networkidle' });
+		await page.waitForTimeout(800);
+		await page.screenshot({
+			path: path.join(OUT, 'design-tokens.png'),
+			fullPage: true,
+		});
+		await ctx.close();
+	}
 
 	await browser.close();
 	console.log('Done. Screenshots in', OUT);
