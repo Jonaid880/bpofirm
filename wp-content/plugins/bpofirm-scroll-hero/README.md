@@ -29,7 +29,7 @@ Both blocks are styled to match the bpofirm.com brand (accent red `#ef494b`, blu
 | `bg_src` | `…/vecteezy_dotted-world-map_1198050-1024x491.png` | Full-screen background image. |
 | `date` | `""` | Optional small label above the scroll-prompt. |
 | `scroll_label` | `Scroll to Expand` | Scroll-prompt label. Set to empty string to hide. |
-| `text_blend` | `0` | `1` to enable `mix-blend-mode: difference` on the title. |
+| `text_blend` | `1` | `1` keeps `mix-blend-mode: difference` on the title (default) — adaptive contrast against both the light page bg and the dark gradient card. Set to `0` to force the flat blue-200 colour. |
 
 Content between the opening / closing tags becomes the post-expand body (hidden until expansion completes):
 

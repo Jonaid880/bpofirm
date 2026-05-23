@@ -33,7 +33,9 @@
 
 .bpo-scroll-hero__stage {
 	position: relative;
-	z-index: 2;
+	/* No z-index here on purpose — it would form a stacking context that
+	 * confines the title's mix-blend-mode and stops it reading against
+	 * the page background. Source order alone keeps stage above the bg. */
 	width: 100%;
 	min-height: 100dvh;
 	display: flex;
@@ -83,7 +85,10 @@
 
 .bpo-scroll-hero__title {
 	position: relative;
-	z-index: 3;
+	/* No z-index — see .bpo-scroll-hero__stage note. Source order
+	 * (title comes after media/bg in the DOM) keeps it on top, and
+	 * leaving this container non-isolated lets the children's
+	 * mix-blend-mode read against the page background. */
 	display: flex;
 	flex-direction: column;
 	align-items: center;

@@ -82,7 +82,7 @@ add_shortcode(
 				'bg_src'       => 'https://bpofirm.com/wp-content/uploads/2026/01/vecteezy_dotted-world-map_1198050-1024x491.png',
 				'date'         => '',
 				'scroll_label' => 'Scroll to Expand',
-				'text_blend'   => '0',
+				'text_blend'   => '1',
 			),
 			$atts,
 			'bpofirm_scroll_hero'
