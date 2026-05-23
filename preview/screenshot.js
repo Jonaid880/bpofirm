@@ -139,6 +139,19 @@ const mobile  = { width: 390,  height: 844 };
 		await ctx.close();
 	}
 
+	console.log('Capturing sample Home page (image plan)…');
+	{
+		const ctx = await browser.newContext({ viewport: desktop, deviceScaleFactor: 2 });
+		const page = await ctx.newPage();
+		await page.goto('file://' + path.join(__dirname, 'sample-home.html'), { waitUntil: 'networkidle' });
+		await page.waitForTimeout(800);
+		await page.screenshot({
+			path: path.join(OUT, 'sample-home-full.png'),
+			fullPage: true,
+		});
+		await ctx.close();
+	}
+
 	await browser.close();
 	console.log('Done. Screenshots in', OUT);
 })();
