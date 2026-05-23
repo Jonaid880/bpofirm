@@ -9,6 +9,7 @@ fs.mkdirSync(OUT, { recursive: true });
 
 const url = 'file://' + path.join(__dirname, 'index.html');
 const tokensUrl = 'file://' + path.join(__dirname, 'design-tokens.html');
+const heroAnimUrl = 'file://' + path.join(__dirname, 'hero-animation.html');
 
 const desktop = { width: 1440, height: 900 };
 const mobile  = { width: 390,  height: 844 };
@@ -114,6 +115,26 @@ const mobile  = { width: 390,  height: 844 };
 		await page.screenshot({
 			path: path.join(OUT, 'design-tokens.png'),
 			fullPage: true,
+		});
+		await ctx.close();
+	}
+
+	console.log('Capturing hero animation prototype…');
+	for (const vp of [
+		{ name: 'desktop', size: desktop },
+		{ name: 'mobile',  size: mobile  },
+	]) {
+		const ctx = await browser.newContext({ viewport: vp.size, deviceScaleFactor: 2 });
+		const page = await ctx.newPage();
+		await page.goto(heroAnimUrl, { waitUntil: 'networkidle' });
+		// Capture two frames per viewport so the reader sees the icons drift.
+		await page.waitForTimeout(400);
+		await page.screenshot({
+			path: path.join(OUT, `${vp.name}-hero-anim-frame-1.png`),
+		});
+		await page.waitForTimeout(2200);
+		await page.screenshot({
+			path: path.join(OUT, `${vp.name}-hero-anim-frame-2.png`),
 		});
 		await ctx.close();
 	}

@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>BPO Firm — Hero animation prototype</title>
+	<link rel="stylesheet" href="../wp-content/plugins/bpofirm-design-system/assets/tokens.css">
+	<style>
+		body { margin: 0; padding: 0; font-family: var(--bpo-font-body); }
+
+		.bpo-hero {
+			position: relative;
+			min-height: 100vh;
+			overflow: hidden;
+			isolation: isolate;
+			color: #fff;
+		}
+
+		/* Background image — Ken Burns slow zoom + drift. Replace the
+		 * background-image URL with the office photo per page. */
+		.bpo-hero__bg {
+			position: absolute;
+			inset: 0;
+			background-size: cover;
+			background-position: center;
+			background-image: var(--bpo-hero-bg, none);
+			animation: bpo-ken-burns 28s ease-in-out infinite alternate;
+			will-change: transform;
+		}
+		@keyframes bpo-ken-burns {
+			0%   { transform: scale(1)    translate(0, 0); }
+			100% { transform: scale(1.12) translate(-1.5%, -1.2%); }
+		}
+
+		/* Dark gradient overlay for text readability. */
+		.bpo-hero__overlay {
+			position: absolute;
+			inset: 0;
+			background:
+				radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.55) 70%, rgba(0,0,0,0.78) 100%),
+				linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.55) 100%);
+		}
+
+		/* Icon constellation layer. */
+		.bpo-hero__icons {
+			position: absolute;
+			inset: 0;
+			pointer-events: none;
+		}
+		.bpo-chip {
+			position: absolute;
+			width: 64px;
+			height: 64px;
+			border-radius: 50%;
+			background: #fff;
+			box-shadow:
+				0 12px 32px rgba(0, 0, 0, 0.30),
+				0 0 0 1px rgba(255, 255, 255, 0.10);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			animation:
+				bpo-chip-float var(--bpo-dur, 5s) ease-in-out infinite alternate,
+				bpo-chip-pulse var(--bpo-dur-pulse, 4s) ease-in-out infinite;
+			animation-delay: var(--bpo-delay, 0s), var(--bpo-delay-pulse, 0s);
+			will-change: transform, opacity;
+		}
+		.bpo-chip > img {
+			width: 40px;
+			height: 40px;
+			object-fit: contain;
+		}
+		@keyframes bpo-chip-float {
+			0%   { transform: translateY(0) translateX(0); }
+			100% { transform: translateY(var(--bpo-shift-y, -14px)) translateX(var(--bpo-shift-x, 6px)); }
+		}
+		@keyframes bpo-chip-pulse {
+			0%, 100% { opacity: 0.85; }
+			50%      { opacity: 1; }
+		}
+
+		/* Hero content block (title + lede + CTAs). */
+		.bpo-hero__content {
+			position: relative;
+			z-index: 10;
+			max-width: 760px;
+			margin: 0 auto;
+			padding: 22vh 32px 16vh;
+			text-align: center;
+		}
+		.bpo-hero__eyebrow {
+			font-size: 12px; font-weight: 500;
+			text-transform: uppercase;
+			letter-spacing: 0.3em;
+			color: rgba(255, 255, 255, 0.75);
+			margin: 0 0 28px;
+		}
+		.bpo-hero__title {
+			font-family: var(--bpo-font-display);
+			font-style: italic;
+			font-size: clamp(48px, 7.5vw, 96px);
+			line-height: 0.95;
+			letter-spacing: -0.01em;
+			margin: 0 0 24px;
+			color: #fff;
+		}
+		.bpo-hero__title em { font-style: italic; color: #ef494b; }
+		.bpo-hero__lede {
+			font-size: 16px;
+			line-height: 1.6;
+			color: rgba(255, 255, 255, 0.85);
+			max-width: 32rem;
+			margin: 0 auto 36px;
+		}
+		.bpo-hero__ctas {
+			display: inline-flex;
+			gap: 14px;
+			flex-wrap: wrap;
+			justify-content: center;
+		}
+		.bpo-hero__btn {
+			display: inline-block;
+			padding: 14px 28px;
+			border-radius: 9999px;
+			font-size: 14px;
+			font-weight: 500;
+			text-decoration: none;
+			transition: transform 0.2s ease;
+		}
+		.bpo-hero__btn:hover { transform: scale(1.05); }
+		.bpo-hero__btn--solid {
+			background: var(--bpo-brand);
+			color: #fff;
+		}
+		.bpo-hero__btn--outline {
+			background: transparent;
+			color: #fff;
+			box-shadow: inset 0 0 0 2px rgba(255,255,255,0.5);
+		}
+
+		/* "What it'd look like on a real photo" stand-in — soft tonal gradient. */
+		.placeholder-bg {
+			background:
+				radial-gradient(circle at 30% 20%, #4a5568 0%, transparent 50%),
+				radial-gradient(circle at 70% 70%, #2d3748 0%, transparent 50%),
+				linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.bpo-hero__bg, .bpo-chip { animation: none !important; }
+		}
+	</style>
+</head>
+<body class="bpo-page">
+	<section class="bpo-hero">
+		<div class="bpo-hero__bg placeholder-bg" id="hero-bg"></div>
+		<div class="bpo-hero__overlay" aria-hidden="true"></div>
+		<div class="bpo-hero__icons" id="hero-icons" aria-hidden="true"></div>
+		<div class="bpo-hero__content">
+			<p class="bpo-hero__eyebrow">A working partner — not another vendor</p>
+			<h1 class="bpo-hero__title">One <em>BPO</em> for every channel.</h1>
+			<p class="bpo-hero__lede">
+				Calls, chats, social, email, AI assists — orchestrated under one roof.
+				Plug your stack in once, ship outcomes from day one.
+			</p>
+			<div class="bpo-hero__ctas">
+				<a href="#" class="bpo-hero__btn bpo-hero__btn--solid">Book a discovery call</a>
+				<a href="#" class="bpo-hero__btn bpo-hero__btn--outline">See our work</a>
+			</div>
+		</div>
+	</section>
+
+	<script>
+		// 16 brand-icon chips floating in a constellation around the title.
+		// Each icon = { color, char(s), fg } drawn as inline SVG data URI.
+		function chipDataUri(bg, ch, fg, fontSize) {
+			fg = fg || '#fff';
+			fontSize = fontSize || (ch.length === 1 ? 34 : 22);
+			return 'data:image/svg+xml;utf8,' + encodeURIComponent(
+				'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
+					'<circle cx="32" cy="32" r="30" fill="' + bg + '"/>' +
+					'<text x="32" y="' + (32 + fontSize * 0.35) + '" ' +
+						'text-anchor="middle" ' +
+						'font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" ' +
+						'font-size="' + fontSize + '" ' +
+						'font-weight="700" ' +
+						'fill="' + fg + '">' + ch + '</text>' +
+				'</svg>'
+			);
+		}
+		// More distinctive: gradient backgrounds for IG, multicolor for Google/Slack
+		function gradientChip(stops, ch, fg, fontSize) {
+			fg = fg || '#fff';
+			fontSize = fontSize || (ch.length === 1 ? 34 : 22);
+			var stopMarkup = stops.map(function (s, i) {
+				return '<stop offset="' + (i * 100 / (stops.length - 1)) + '%" stop-color="' + s + '"/>';
+			}).join('');
+			return 'data:image/svg+xml;utf8,' + encodeURIComponent(
+				'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
+					'<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' + stopMarkup + '</linearGradient></defs>' +
+					'<circle cx="32" cy="32" r="30" fill="url(#g)"/>' +
+					'<text x="32" y="' + (32 + fontSize * 0.35) + '" ' +
+						'text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" ' +
+						'font-size="' + fontSize + '" font-weight="700" fill="' + fg + '">' + ch + '</text>' +
+				'</svg>'
+			);
+		}
+
+		var ICONS = [
+			// Social
+			{ name: 'Facebook',   uri: chipDataUri('#1877f2', 'f') },
+			{ name: 'Instagram',  uri: gradientChip(['#f9ce34','#ee2a7b','#6228d7'], '◎') },
+			{ name: 'X',          uri: chipDataUri('#000', '𝕏', '#fff', 28) },
+			{ name: 'LinkedIn',   uri: chipDataUri('#0a66c2', 'in', '#fff', 22) },
+			{ name: 'YouTube',    uri: chipDataUri('#ff0000', '▶') },
+			{ name: 'WhatsApp',   uri: chipDataUri('#25d366', '✆', '#fff', 30) },
+			{ name: 'Pinterest',  uri: chipDataUri('#bd081c', 'P') },
+			{ name: 'TikTok',     uri: chipDataUri('#000', '♪') },
+			// AI
+			{ name: 'ChatGPT',    uri: chipDataUri('#10a37f', '✱', '#fff', 36) },
+			{ name: 'Claude',     uri: chipDataUri('#cc785c', '✦', '#fff', 32) },
+			{ name: 'Gemini',     uri: gradientChip(['#4285f4','#9b72cb','#d96570'], '✧', '#fff', 30) },
+			{ name: 'Copilot',    uri: chipDataUri('#0078d4', '✺', '#fff', 32) },
+			// Google + Microsoft
+			{ name: 'Google',     uri: gradientChip(['#4285f4','#ea4335','#fbbc04','#34a853'], 'G', '#fff', 32) },
+			{ name: 'Gmail',      uri: chipDataUri('#ea4335', 'M', '#fff', 32) },
+			// Business
+			{ name: 'Slack',      uri: gradientChip(['#e01e5a','#ecb22e','#36c5f0','#2eb67d'], '#', '#fff', 32) },
+			{ name: 'Salesforce', uri: chipDataUri('#00a1e0', '☁', '#fff', 30) },
+		];
+
+		// Hand-placed positions [x%, y%, shiftX, shiftY, dur, delay].
+		// Avoid the central column (35-65%, 25-65%) where the title sits.
+		var POSITIONS = [
+			[ 6,  12, -8, -16, 5.5, 0.0],
+			[18,   8,  6, -12, 6.2, 0.4],
+			[32,  20, -4, -14, 5.0, 0.8],
+			[80,   6,  8, -10, 6.8, 0.2],
+			[92,  22, -6, -16, 5.6, 0.6],
+			[68,  16,  4, -12, 6.0, 1.0],
+			[ 4,  38,  8, -10, 5.8, 1.4],
+			[10,  62, -6,  10, 6.4, 0.5],
+			[88,  44, -8,  12, 5.4, 1.2],
+			[94,  68,  6,  10, 6.0, 0.7],
+			[18,  78,  8, -10, 5.2, 0.3],
+			[30,  88, -4,  12, 6.6, 1.1],
+			[55,  85,  6,  10, 5.0, 0.9],
+			[70,  82, -8,  12, 5.8, 1.5],
+			[82,  88,  4, -10, 6.2, 0.4],
+			[42,  10,  6, -14, 5.6, 1.3],
+		];
+
+		var host = document.getElementById('hero-icons');
+		ICONS.forEach(function (icon, i) {
+			var p = POSITIONS[i] || [50, 50, 0, -12, 5, 0];
+			var chip = document.createElement('div');
+			chip.className = 'bpo-chip';
+			chip.style.cssText =
+				'left:' + p[0] + '%;' +
+				'top:'  + p[1] + '%;' +
+				'--bpo-shift-x:' + p[2] + 'px;' +
+				'--bpo-shift-y:' + p[3] + 'px;' +
+				'--bpo-dur:' + p[4] + 's;' +
+				'--bpo-delay:' + p[5] + 's;' +
+				'--bpo-dur-pulse:' + (p[4] * 0.7) + 's;' +
+				'--bpo-delay-pulse:' + (p[5] * 0.3) + 's;';
+			chip.title = icon.name;
+			chip.innerHTML = '<img src="' + icon.uri + '" alt="' + icon.name + '">';
+			host.appendChild(chip);
+		});
+	</script>
+</body>
+</html>
