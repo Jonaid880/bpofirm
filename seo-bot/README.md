@@ -76,6 +76,10 @@ See [SETUP.md](SETUP.md) for full installation + API key sourcing, and
 [GITHUB_ACTIONS.md](GITHUB_ACTIONS.md) for zero-server scheduled runs
 (daily + weekly cron, manual triggers, artifact downloads).
 
+**Want the visual map?** Open [ROADMAP.md](ROADMAP.md) — system diagram,
+schedule timeline, data flow, setup status board. For real-time state,
+run `python run.py status`.
+
 ---
 
 ## Architecture

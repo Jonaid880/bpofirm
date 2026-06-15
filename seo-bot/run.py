@@ -57,6 +57,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(prog="seo-bot")
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("list", help="List available commands")
+    sub.add_parser("status", help="Live state: which secrets are set, which modules have run, what's blocking")
     for cmd in ("citations", "competitors", "clusters", "entities", "outreach",
                 "pr", "mentions", "overviews",
                 "biz-citations", "broken-links", "haro", "reviews",
@@ -86,6 +87,11 @@ def main() -> int:
         print("  - social  <brief_path>")
         print("  - medium  <brief_path>")
         print("  - fanout  <brief_path> [--status draft|publish]   (WordPress + Dev.to + Hashnode + LinkedIn + Ghost + Blogger)")
+        return 0
+
+    if args.cmd == "status":
+        from utils.status import run as status_run
+        status_run()
         return 0
 
     if args.cmd == "publish":
