@@ -32,14 +32,15 @@ TOKEN = os.getenv("AIRTABLE_TOKEN", "")
 BASE = os.getenv("AIRTABLE_BASE_ID", "")
 API = "https://api.airtable.com/v0"
 
-# Which CSV feeds which Airtable tab. Rename keys if your tab names differ.
-# User asked for AI Visibility ONLY for now — other tabs commented out.
-# Re-enable any line below to start syncing that tab as well.
+# Which CSV feeds which Airtable tab.
+# We address tables by TABLE ID, not name. Names can mismatch invisibly
+# (emoji prefix, trailing whitespace, rename) and Airtable returns 404 for
+# any miss. Table IDs are immutable — find them in the URL of the table
+# view: https://airtable.com/{baseId}/{tableId}/{viewId}.
 TABLE_MAP: Dict[str, Path] = {
-    "AI Visibility":     ROOT / "airtable" / "ai_visibility.csv",
-    # "Content Calendar":  ROOT / "airtable" / "content_calendar.csv",
-    # "Link Opportunities": ROOT / "airtable" / "link_opportunities.csv",
-    # "Keywords":          ROOT / "airtable" / "keywords.csv",
+    "tblj8ImoiXXOjc2Xm":  ROOT / "airtable" / "ai_visibility.csv",  # AI Visibility
+    # Add more table IDs to re-enable other tabs, e.g.:
+    # "tblXXXXXXXXXXXXXX": ROOT / "airtable" / "content_calendar.csv",
 }
 
 # Fields that should be coerced from CSV string to checkbox / number / date.
@@ -99,10 +100,8 @@ def sync_table(table: str, csv_path: Path) -> Dict[str, int]:
     Keyword) — change `KEY_BY_TABLE` below if your schema uses something else.
     """
     KEY_BY_TABLE = {
-        "AI Visibility":     "Question",
-        "Content Calendar":  "Title",
-        "Link Opportunities": "Platform/Site",
-        "Keywords":          "Keyword",
+        "tblj8ImoiXXOjc2Xm": "Question",       # AI Visibility
+        # Add table-id -> upsert key entries here if re-enabling other tabs.
     }
     key_field = KEY_BY_TABLE.get(table, "")
     if not key_field:
