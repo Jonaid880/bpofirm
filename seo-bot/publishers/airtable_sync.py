@@ -33,11 +33,13 @@ BASE = os.getenv("AIRTABLE_BASE_ID", "")
 API = "https://api.airtable.com/v0"
 
 # Which CSV feeds which Airtable tab. Rename keys if your tab names differ.
+# User asked for AI Visibility ONLY for now — other tabs commented out.
+# Re-enable any line below to start syncing that tab as well.
 TABLE_MAP: Dict[str, Path] = {
     "AI Visibility":     ROOT / "airtable" / "ai_visibility.csv",
-    "Content Calendar":  ROOT / "airtable" / "content_calendar.csv",
-    "Link Opportunities": ROOT / "airtable" / "link_opportunities.csv",
-    "Keywords":          ROOT / "airtable" / "keywords.csv",
+    # "Content Calendar":  ROOT / "airtable" / "content_calendar.csv",
+    # "Link Opportunities": ROOT / "airtable" / "link_opportunities.csv",
+    # "Keywords":          ROOT / "airtable" / "keywords.csv",
 }
 
 # Fields that should be coerced from CSV string to checkbox / number / date.
