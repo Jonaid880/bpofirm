@@ -37,7 +37,6 @@ on:
           - broken-links
           - haro
           - reviews
-          - airtable-sync
 
 permissions:
   contents: read
@@ -79,9 +78,6 @@ jobs:
         env:
           # Required
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          # Airtable sync (optional)
-          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
-          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           # Site
           SITE_URL: ${{ vars.SITE_URL || 'https://securityblogs.com.au' }}
           SITE_NAME: ${{ vars.SITE_NAME || 'SecurityBlogs' }}

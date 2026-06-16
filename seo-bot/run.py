@@ -77,8 +77,6 @@ def main() -> int:
     fan.add_argument("path")
     fan.add_argument("--status", default="draft", choices=["draft", "publish"])
 
-    sub.add_parser("airtable-sync", help="Push the seo-bot/airtable/*.csv files into your Airtable base")
-
     args = parser.parse_args()
 
     if args.cmd == "list":
@@ -111,12 +109,6 @@ def main() -> int:
         results = fanout(args.path, status=args.status)
         for k, v in results.items():
             print(f"  {k}: {v}")
-        return 0
-
-    if args.cmd == "airtable-sync":
-        from publishers.airtable_sync import sync_all
-        for table, stats in sync_all().items():
-            print(f"  {table}: {stats}")
         return 0
 
     runners = _module_runners()
