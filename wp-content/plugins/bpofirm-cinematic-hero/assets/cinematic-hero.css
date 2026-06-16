@@ -1,0 +1,288 @@
+/* BPO Firm — Cinematic Hero (v2)
+ * Scroll-driven zoom + interactive password entry. JS hijacks wheel/
+ * touch to drive a 0..1 zoom value; once zoomed all the way in the
+ * keypad becomes clickable. Enter the right password to unlock the
+ * interior reveal (which releases the scroll lock so the rest of the
+ * page can scroll normally).
+ *
+ * State classes (set on .bpo-cine root by the JS):
+ *   .is-locked     scroll is hijacked, zoom in progress (added on init)
+ *   .is-zoomed     zoom reached 1.0 — keypad interactive
+ *   .is-error      wrong password just entered — display flashes red briefly
+ *   .is-granted    correct password — interior reveal plays, scroll unlocks
+ *
+ * Per-office colour theme (set via shortcode attrs as inline CSS vars
+ * on the root, defaults shown):
+ *   --bpo-cine-accent-rgb: 255, 195, 100   (warm gold)
+ *   --bpo-cine-exterior:   <bg image url or gradient>
+ *   --bpo-cine-interior:   <bg image url or gradient>
+ */
+
+.bpo-cine {
+	--bpo-cine-zoom: 0;
+	--bpo-cine-accent-rgb: 255, 195, 100;
+	position: relative;
+	width: 100%;
+	height: 100vh;
+	overflow: hidden;
+	isolation: isolate;
+	background: #000;
+	color: #fff;
+}
+
+/* --- Background plates ---------------------------------------------- */
+.bpo-cine__bg {
+	position: absolute; inset: 0;
+	background-size: cover;
+	background-position: center;
+	will-change: opacity, transform;
+}
+.bpo-cine__bg--exterior {
+	z-index: 1;
+	background-image: var(--bpo-cine-exterior,
+		radial-gradient(ellipse at 50% 35%, #2a1810 0%, #0a0604 60%, #000 100%));
+	transform: scale(calc(1 + var(--bpo-cine-zoom) * 0.35));
+	opacity: 1;
+	transition: opacity 0.6s ease-out;
+}
+.bpo-cine__bg--interior {
+	z-index: 2;
+	background-image: var(--bpo-cine-interior,
+		radial-gradient(ellipse at 35% 40%, #d4a574 0%, #6b4423 30%, #2a1a0d 70%, #000 100%));
+	opacity: 0;
+	transform: scale(1.06);
+	transition: opacity 0.9s ease-out, transform 1.5s ease-out;
+}
+.bpo-cine.is-granted .bpo-cine__bg--exterior { opacity: 0; }
+.bpo-cine.is-granted .bpo-cine__bg--interior { opacity: 1; transform: scale(1); }
+
+/* --- Warm cinematic vignette --------------------------------------- */
+.bpo-cine__vignette {
+	position: absolute; inset: 0; z-index: 3;
+	pointer-events: none;
+	background:
+		radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.88) 100%),
+		radial-gradient(ellipse at 30% 20%, rgba(var(--bpo-cine-accent-rgb), 0.18) 0%, transparent 50%),
+		radial-gradient(ellipse at 70% 80%, rgba(var(--bpo-cine-accent-rgb), 0.10) 0%, transparent 60%);
+}
+
+/* --- Keypad stage (scales with zoom) ------------------------------- */
+.bpo-cine__stage {
+	position: absolute; inset: 0; z-index: 4;
+	display: flex; flex-direction: column;
+	align-items: center; justify-content: center;
+	gap: 28px;
+	/* Scale from 0.32 (distant) to 1.0 (fully zoomed in). */
+	transform: scale(calc(0.32 + var(--bpo-cine-zoom) * 0.68));
+	opacity: calc(0.5 + var(--bpo-cine-zoom) * 0.5);
+	transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+}
+.bpo-cine.is-granted .bpo-cine__stage {
+	opacity: 0;
+	transform: scale(1.15);
+	transition: opacity 0.6s ease-out, transform 0.8s ease-out;
+	pointer-events: none;
+}
+
+.bpo-cine__keypad {
+	width: 240px;
+	padding: 24px 22px 18px;
+	background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+	border: 1px solid rgba(var(--bpo-cine-accent-rgb), 0.30);
+	border-radius: 24px;
+	box-shadow:
+		0 30px 80px rgba(0, 0, 0, 0.6),
+		inset 0 1px 0 rgba(var(--bpo-cine-accent-rgb), 0.15);
+}
+.bpo-cine__display {
+	display: flex; justify-content: center; gap: 12px;
+	margin-bottom: 18px;
+	font-family: ui-monospace, monospace;
+	font-size: 22px; font-weight: 700;
+	letter-spacing: 0.18em;
+	color: rgba(var(--bpo-cine-accent-rgb), 0.95);
+	height: 28px;
+	transition: color 0.15s ease;
+}
+.bpo-cine__display .digit {
+	display: inline-block; width: 14px; text-align: center;
+	color: rgba(var(--bpo-cine-accent-rgb), 0.25);
+	transition: color 0.15s ease;
+}
+.bpo-cine__display .digit.is-filled {
+	color: rgba(var(--bpo-cine-accent-rgb), 0.95);
+}
+.bpo-cine.is-error .bpo-cine__display {
+	color: #ef494b;
+	animation: bpo-cine-shake 0.35s ease;
+}
+.bpo-cine.is-error .bpo-cine__display .digit { color: #ef494b; }
+@keyframes bpo-cine-shake {
+	0%, 100% { transform: translateX(0); }
+	25% { transform: translateX(-6px); }
+	75% { transform: translateX(6px); }
+}
+
+.bpo-cine__keys {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 8px;
+}
+.bpo-cine__key {
+	aspect-ratio: 1;
+	display: flex; align-items: center; justify-content: center;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(var(--bpo-cine-accent-rgb), 0.14);
+	border-radius: 10px;
+	font-family: var(--bpo-font-body, system-ui, sans-serif);
+	font-size: 20px; font-weight: 500;
+	color: rgba(var(--bpo-cine-accent-rgb), 0.7);
+	cursor: not-allowed;
+	user-select: none;
+	transition: background 0.15s ease, transform 0.1s ease, color 0.15s ease;
+}
+.bpo-cine.is-zoomed .bpo-cine__key { cursor: pointer; }
+.bpo-cine.is-zoomed .bpo-cine__key:hover {
+	background: rgba(var(--bpo-cine-accent-rgb), 0.16);
+	color: rgba(var(--bpo-cine-accent-rgb), 1);
+}
+.bpo-cine.is-zoomed .bpo-cine__key:active,
+.bpo-cine__key.is-pressed {
+	background: rgba(var(--bpo-cine-accent-rgb), 0.45);
+	color: #fff;
+	transform: scale(0.95);
+	box-shadow: 0 0 22px rgba(var(--bpo-cine-accent-rgb), 0.75);
+}
+
+/* --- "Access Granted" badge — shown briefly when password correct -- */
+.bpo-cine__granted {
+	padding: 10px 22px;
+	border: 1px solid rgba(var(--bpo-cine-accent-rgb), 0.6);
+	border-radius: 4px;
+	background: rgba(var(--bpo-cine-accent-rgb), 0.10);
+	font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+	font-weight: 700;
+	font-size: 18px;
+	letter-spacing: 0.32em;
+	color: rgb(var(--bpo-cine-accent-rgb));
+	text-transform: uppercase;
+	text-shadow:
+		0 0 12px rgba(var(--bpo-cine-accent-rgb), 0.9),
+		0 0 32px rgba(var(--bpo-cine-accent-rgb), 0.5);
+	box-shadow:
+		0 0 28px rgba(var(--bpo-cine-accent-rgb), 0.4),
+		inset 0 0 12px rgba(var(--bpo-cine-accent-rgb), 0.18);
+	opacity: 0;
+	transform: scale(0.9);
+	transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.bpo-cine.is-granted .bpo-cine__granted {
+	opacity: 1;
+	transform: scale(1);
+}
+
+/* --- Hint text shown while keypad is distant ----------------------- */
+.bpo-cine__hint {
+	position: absolute;
+	bottom: 8vh; left: 50%;
+	transform: translateX(-50%);
+	z-index: 5;
+	font-size: 11px;
+	letter-spacing: 0.32em;
+	text-transform: uppercase;
+	color: rgba(var(--bpo-cine-accent-rgb), 0.7);
+	opacity: calc(1 - var(--bpo-cine-zoom));
+	transition: opacity 0.3s ease;
+	pointer-events: none;
+}
+.bpo-cine.is-zoomed .bpo-cine__hint,
+.bpo-cine.is-granted .bpo-cine__hint { opacity: 0; }
+.bpo-cine__hint-2 {
+	position: absolute;
+	bottom: 8vh; left: 50%;
+	transform: translateX(-50%);
+	z-index: 5;
+	font-size: 11px;
+	letter-spacing: 0.32em;
+	text-transform: uppercase;
+	color: rgba(var(--bpo-cine-accent-rgb), 0.85);
+	opacity: 0;
+	transition: opacity 0.3s ease;
+	pointer-events: none;
+}
+.bpo-cine.is-zoomed .bpo-cine__hint-2 { opacity: 1; }
+.bpo-cine.is-granted .bpo-cine__hint-2 { opacity: 0; }
+
+/* --- Hero content (revealed after access granted) ------------------ */
+.bpo-cine__content {
+	position: absolute; inset: 0; z-index: 5;
+	display: flex; flex-direction: column;
+	align-items: center; justify-content: center;
+	text-align: center;
+	padding: 32px;
+	opacity: 0;
+	transform: translateY(16px);
+	transition: opacity 0.7s ease 0.4s, transform 0.9s ease 0.4s;
+	pointer-events: none;
+}
+.bpo-cine.is-granted .bpo-cine__content {
+	opacity: 1;
+	transform: translateY(0);
+}
+.bpo-cine.is-granted .bpo-cine__content > * { pointer-events: auto; }
+
+.bpo-cine__eyebrow {
+	font-size: 11px; letter-spacing: 0.35em; text-transform: uppercase;
+	color: rgba(var(--bpo-cine-accent-rgb), 0.85);
+	margin: 0 0 24px;
+}
+.bpo-cine__title {
+	font-family: var(--bpo-font-display, Georgia, serif);
+	font-style: italic;
+	font-size: clamp(48px, 8vw, 96px);
+	line-height: 0.95;
+	margin: 0 0 20px;
+	color: #fff;
+	max-width: 16ch;
+}
+.bpo-cine__title em {
+	color: var(--bpo-brand, #ef494b);
+	font-style: italic;
+}
+.bpo-cine__lede {
+	font-size: 16px;
+	line-height: 1.6;
+	color: rgba(255, 255, 255, 0.82);
+	max-width: 34rem;
+	margin: 0 0 32px;
+}
+.bpo-cine__ctas { display: inline-flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.bpo-cine__btn {
+	display: inline-block;
+	padding: 14px 28px;
+	border-radius: 999px;
+	font-size: 14px; font-weight: 500;
+	text-decoration: none;
+	transition: transform 0.2s ease;
+}
+.bpo-cine__btn:hover { transform: scale(1.05); }
+.bpo-cine__btn--solid {
+	background: var(--bpo-brand, #ef494b);
+	color: #fff;
+	box-shadow: 0 8px 32px rgba(239, 73, 75, 0.4);
+}
+.bpo-cine__btn--outline {
+	background: transparent;
+	color: #fff;
+	box-shadow: inset 0 0 0 1.5px rgba(var(--bpo-cine-accent-rgb), 0.75);
+}
+
+/* --- Reduced-motion fallback --------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+	.bpo-cine__bg, .bpo-cine__stage { transition: none; }
+	.bpo-cine__bg--exterior { opacity: 0; transform: none; }
+	.bpo-cine__bg--interior { opacity: 1; transform: none; }
+	.bpo-cine__stage { display: none; }
+	.bpo-cine__content { opacity: 1; transform: none; pointer-events: auto; }
+	.bpo-cine__hint, .bpo-cine__hint-2 { display: none; }
+}

@@ -1,0 +1,134 @@
+/* BPO Firm — Design System tokens
+ * Brand-themed design language for Home, About, Contact. Uses bpofirm's
+ * original light palette (red + blue accents on white) but keeps the
+ * editorial type pairing (Inter + Instrument Serif italic) and the
+ * animation library from the React reference.
+ *
+ * All rules scoped under .bpo-page so the existing service-page blocks
+ * (bpofirm-scroll-hero plugin) are not affected.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital,wght@1,400&display=swap');
+
+/* ----- Root font + brand tokens (always loaded) ------------------------ */
+:root {
+	--bpo-font-body:    'Inter', system-ui, -apple-system, sans-serif;
+	--bpo-font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+
+	/* Confirmed against reference/bpofirm-site-reference.md §3. */
+	--bpo-brand:        #ef494b;   /* primary accent — CTAs, highlights, cursor */
+	--bpo-brand-dark:   #b91c1c;   /* paired darker stop for gradient */
+	--bpo-brand-blue:   #0a58ca;   /* secondary accent — links, cursor trail */
+	--bpo-brand-blue-soft: rgba(10, 88, 202, 0.25);
+
+	--bpo-accent-gradient: linear-gradient(90deg, #ef494b 0%, #b91c1c 100%);
+}
+
+/* ----- Brand-page scope (light theme) ---------------------------------- */
+.bpo-page {
+	/* HSL components (no hsl() wrapper, same pattern as reference). */
+	--bg:      0 0% 100%;   /* white */
+	--surface: 220 14% 98%; /* near-white slate */
+	--text:    222 47% 11%; /* slate-900 */
+	--muted:   215 16% 47%; /* slate-500 */
+	--stroke:  216 12% 84%; /* slate-200 */
+
+	background-color: hsl(var(--bg));
+	color: hsl(var(--text));
+	color-scheme: light;
+	font-family: var(--bpo-font-body);
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Dark-section utility — for the occasional contrast band (CTA, footer)
+ * called out in the site reference. Apply this class to any section that
+ * should invert to dark within an otherwise light page. */
+.bpo-page .bpo-section-dark,
+.bpo-section-dark.bpo-page {
+	--bg:      0 0% 4%;
+	--surface: 0 0% 8%;
+	--text:    0 0% 96%;
+	--muted:   0 0% 53%;
+	--stroke:  0 0% 12%;
+	background-color: hsl(var(--bg));
+	color: hsl(var(--text));
+	color-scheme: dark;
+}
+
+/* Type-scale utility classes (mirrors reference's font-display + sizes). */
+.bpo-page .bpo-display {
+	font-family: var(--bpo-font-display);
+	font-style: italic;
+	line-height: 0.9;
+	letter-spacing: -0.01em;
+}
+.bpo-page .bpo-eyebrow {
+	font-size: 0.75rem;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.3em;
+	color: hsl(var(--muted));
+}
+.bpo-page .bpo-muted { color: hsl(var(--muted)); }
+.bpo-page .bpo-surface {
+	background-color: hsl(var(--surface));
+	border: 1px solid hsl(var(--stroke));
+}
+
+/* Brand-coloured text helpers. */
+.bpo-brand-red  { color: var(--bpo-brand); }
+.bpo-brand-blue { color: var(--bpo-brand-blue); }
+
+/* ----- Accent gradient utilities --------------------------------------- */
+.bpo-accent-gradient {
+	background: var(--bpo-accent-gradient);
+}
+.bpo-accent-gradient-text {
+	background: var(--bpo-accent-gradient);
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+}
+.bpo-accent-ring {
+	background: var(--bpo-accent-gradient);
+	padding: 2px;
+	border-radius: 9999px;
+	display: inline-block;
+}
+
+/* ----- Custom keyframes (from React reference) ------------------------- */
+@keyframes bpo-scroll-down {
+	0%   { transform: translateY(-100%); }
+	100% { transform: translateY(200%); }
+}
+@keyframes bpo-role-fade-in {
+	from { opacity: 0; transform: translateY(8px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes bpo-gradient-shift {
+	0%, 100% { background-position: 0% 50%; }
+	50%      { background-position: 100% 50%; }
+}
+
+.bpo-animate-scroll-down {
+	animation: bpo-scroll-down 1.5s ease-in-out infinite;
+}
+.bpo-animate-role-fade-in {
+	animation: bpo-role-fade-in 0.4s ease-out;
+}
+.bpo-animate-gradient-shift {
+	background-size: 200% 200%;
+	animation: bpo-gradient-shift 6s ease infinite;
+}
+
+.bpo-accent-glow {
+	box-shadow: 0 0 8px rgba(239, 73, 75, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.bpo-animate-scroll-down,
+	.bpo-animate-role-fade-in,
+	.bpo-animate-gradient-shift {
+		animation: none;
+	}
+}

@@ -1,0 +1,185 @@
+/* BPO Firm — Scroll-Expand Hero
+ * Vanilla CSS port of the ScrollExpandMedia React component.
+ * Heights / widths are driven inline by scroll-hero.js (it sets
+ * --bpo-media-w, --bpo-media-h, --bpo-text-tx, --bpo-bg-opacity, --bpo-overlay-opacity).
+ */
+
+.bpo-scroll-hero {
+	position: relative;
+	width: 100%;
+	min-height: 100dvh;
+	overflow: hidden;
+	color: #bfdbfe; /* blue-200 (matches the React demo) */
+}
+
+.bpo-scroll-hero__bg {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+	opacity: var(--bpo-bg-opacity, 1);
+	transition: opacity 0.1s linear;
+}
+
+.bpo-scroll-hero__bg-tint {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	background: rgba(0, 0, 0, 0.1);
+}
+
+.bpo-scroll-hero__stage {
+	position: relative;
+	/* No z-index here on purpose — it would form a stacking context that
+	 * confines the title's mix-blend-mode and stops it reading against
+	 * the page background. Source order alone keeps stage above the bg. */
+	width: 100%;
+	min-height: 100dvh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+	box-sizing: border-box;
+}
+
+.bpo-scroll-hero__media {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	z-index: 0;
+	width: var(--bpo-media-w, 300px);
+	height: var(--bpo-media-h, 400px);
+	max-width: 95vw;
+	max-height: 85vh;
+	transform: translate(-50%, -50%);
+	border-radius: 1rem;
+	overflow: hidden;
+	box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+	pointer-events: none;
+}
+
+.bpo-scroll-hero__media > video,
+.bpo-scroll-hero__media > img,
+.bpo-scroll-hero__media > iframe {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border: 0;
+	border-radius: 1rem;
+}
+
+.bpo-scroll-hero__media-overlay {
+	position: absolute;
+	inset: 0;
+	background: #000;
+	border-radius: 1rem;
+	opacity: var(--bpo-overlay-opacity, 0.5);
+	transition: opacity 0.2s linear;
+	pointer-events: none;
+}
+
+.bpo-scroll-hero__title {
+	position: relative;
+	/* No z-index — see .bpo-scroll-hero__stage note. Source order
+	 * (title comes after media/bg in the DOM) keeps it on top, and
+	 * leaving this container non-isolated lets the children's
+	 * mix-blend-mode read against the page background. */
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+	width: 100%;
+	text-align: center;
+	pointer-events: none;
+}
+
+.bpo-scroll-hero__title-first,
+.bpo-scroll-hero__title-rest {
+	margin: 0;
+	font-size: clamp(2.25rem, 5.5vw, 4rem);
+	font-weight: 800;
+	line-height: 1.1;
+	color: #bfdbfe;
+}
+
+.bpo-scroll-hero__title-first {
+	transform: translateX(calc(var(--bpo-text-tx, 0) * -1vw));
+}
+
+.bpo-scroll-hero__title-rest {
+	transform: translateX(calc(var(--bpo-text-tx, 0) * 1vw));
+}
+
+.bpo-scroll-hero--text-blend .bpo-scroll-hero__title-first,
+.bpo-scroll-hero--text-blend .bpo-scroll-hero__title-rest {
+	mix-blend-mode: difference;
+}
+
+.bpo-scroll-hero__caption {
+	position: relative;
+	z-index: 3;
+	margin-top: 1rem;
+	text-align: center;
+	color: #bfdbfe;
+	pointer-events: none;
+}
+
+.bpo-scroll-hero__date {
+	margin: 0 0 0.25rem;
+	font-size: 1.5rem;
+	transform: translateX(calc(var(--bpo-text-tx, 0) * -1vw));
+}
+
+.bpo-scroll-hero__scroll-label {
+	margin: 0;
+	font-weight: 500;
+	transform: translateX(calc(var(--bpo-text-tx, 0) * 1vw));
+}
+
+.bpo-scroll-hero__content {
+	position: relative;
+	z-index: 4;
+	width: 100%;
+	padding: 2.5rem 2rem;
+	opacity: 0;
+	transition: opacity 0.7s ease;
+	box-sizing: border-box;
+}
+
+.bpo-scroll-hero.is-expanded .bpo-scroll-hero__content {
+	opacity: 1;
+}
+
+@media (min-width: 768px) {
+	.bpo-scroll-hero__content {
+		padding: 5rem 4rem;
+	}
+}
+
+/* Static mode — no scroll hijack. Used on leaf service pages where users
+ * navigate between many siblings and don't want a forced expand on each
+ * page. The JS skips event-listener attachment when this class is present;
+ * here we just shrink the section so it behaves as a normal banner. */
+.bpo-scroll-hero--static {
+	min-height: auto;
+}
+.bpo-scroll-hero--static .bpo-scroll-hero__stage {
+	min-height: 60vh;
+}
+/* "Scroll to Expand" makes no sense when there's nothing to expand. */
+.bpo-scroll-hero--static .bpo-scroll-hero__scroll-label {
+	display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.bpo-scroll-hero__bg,
+	.bpo-scroll-hero__media-overlay,
+	.bpo-scroll-hero__content {
+		transition: none;
+	}
+}

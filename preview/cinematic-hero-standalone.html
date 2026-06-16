@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BPO Firm — Cinematic Hero v2 (interactive)</title>
+<style>
+/* BPO Firm — Design System tokens
+ * Brand-themed design language for Home, About, Contact. Uses bpofirm's
+ * original light palette (red + blue accents on white) but keeps the
+ * editorial type pairing (Inter + Instrument Serif italic) and the
+ * animation library from the React reference.
+ *
+ * All rules scoped under .bpo-page so the existing service-page blocks
+ * (bpofirm-scroll-hero plugin) are not affected.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital,wght@1,400&display=swap');
+
+/* ----- Root font + brand tokens (always loaded) ------------------------ */
+:root {
+	--bpo-font-body:    'Inter', system-ui, -apple-system, sans-serif;
+	--bpo-font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+
+	/* Confirmed against reference/bpofirm-site-reference.md §3. */
+	--bpo-brand:        #ef494b;   /* primary accent — CTAs, highlights, cursor */
+	--bpo-brand-dark:   #b91c1c;   /* paired darker stop for gradient */
+	--bpo-brand-blue:   #0a58ca;   /* secondary accent — links, cursor trail */
+	--bpo-brand-blue-soft: rgba(10, 88, 202, 0.25);
+
+	--bpo-accent-gradient: linear-gradient(90deg, #ef494b 0%, #b91c1c 100%);
+}
+
+/* ----- Brand-page scope (light theme) ---------------------------------- */
+.bpo-page {
+	/* HSL components (no hsl() wrapper, same pattern as reference). */
+	--bg:      0 0% 100%;   /* white */
+	--surface: 220 14% 98%; /* near-white slate */
+	--text:    222 47% 11%; /* slate-900 */
+	--muted:   215 16% 47%; /* slate-500 */
+	--stroke:  216 12% 84%; /* slate-200 */
+
+	background-color: hsl(var(--bg));
+	color: hsl(var(--text));
+	color-scheme: light;
+	font-family: var(--bpo-font-body);
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Dark-section utility — for the occasional contrast band (CTA, footer)
+ * called out in the site reference. Apply this class to any section that
+ * should invert to dark within an otherwise light page. */
+.bpo-page .bpo-section-dark,
+.bpo-section-dark.bpo-page {
+	--bg:      0 0% 4%;
+	--surface: 0 0% 8%;
+	--text:    0 0% 96%;
+	--muted:   0 0% 53%;
+	--stroke:  0 0% 12%;
+	background-color: hsl(var(--bg));
+	color: hsl(var(--text));
+	color-scheme: dark;
+}
+
+/* Type-scale utility classes (mirrors reference's font-display + sizes). */
+.bpo-page .bpo-display {
+	font-family: var(--bpo-font-display);
+	font-style: italic;
+	line-height: 0.9;
+	letter-spacing: -0.01em;
+}
+.bpo-page .bpo-eyebrow {
+	font-size: 0.75rem;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.3em;
+	color: hsl(var(--muted));
+}
+.bpo-page .bpo-muted { color: hsl(var(--muted)); }
+.bpo-page .bpo-surface {
+	background-color: hsl(var(--surface));
+	border: 1px solid hsl(var(--stroke));
+}
+
+/* Brand-coloured text helpers. */
+.bpo-brand-red  { color: var(--bpo-brand); }
+.bpo-brand-blue { color: var(--bpo-brand-blue); }
+
+/* ----- Accent gradient utilities --------------------------------------- */
+.bpo-accent-gradient {
+	background: var(--bpo-accent-gradient);
+}
+.bpo-accent-gradient-text {
+	background: var(--bpo-accent-gradient);
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+}
+.bpo-accent-ring {
+	background: var(--bpo-accent-gradient);
+	padding: 2px;
+	border-radius: 9999px;
+	display: inline-block;
+}
+
+/* ----- Custom keyframes (from React reference) ------------------------- */
+@keyframes bpo-scroll-down {
+	0%   { transform: translateY(-100%); }
+	100% { transform: translateY(200%); }
+}
+@keyframes bpo-role-fade-in {
+	from { opacity: 0; transform: translateY(8px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes bpo-gradient-shift {
+	0%, 100% { background-position: 0% 50%; }
+	50%      { background-position: 100% 50%; }
+}
+
+.bpo-animate-scroll-down {
+	animation: bpo-scroll-down 1.5s ease-in-out infinite;
+}
+.bpo-animate-role-fade-in {
+	animation: bpo-role-fade-in 0.4s ease-out;
+}
+.bpo-animate-gradient-shift {
+	background-size: 200% 200%;
+	animation: bpo-gradient-shift 6s ease infinite;
+}
+
+.bpo-accent-glow {
+	box-shadow: 0 0 8px rgba(239, 73, 75, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.bpo-animate-scroll-down,
+	.bpo-animate-role-fade-in,
+	.bpo-animate-gradient-shift {
+		animation: none;
+	}
+}
+/* BPO Firm — Cinematic Hero (v2)
+ * Scroll-driven zoom + interactive password entry. JS hijacks wheel/
+ * touch to drive a 0..1 zoom value; once zoomed all the way in the
+ * keypad becomes clickable. Enter the right password to unlock the
+ * interior reveal (which releases the scroll lock so the rest of the
+ * page can scroll normally).
+ *
+ * State classes (set on .bpo-cine root by the JS):
+ *   .is-locked     scroll is hijacked, zoom in progress (added on init)
+ *   .is-zoomed     zoom reached 1.0 — keypad interactive
+ *   .is-error      wrong password just entered — display flashes red briefly
+ *   .is-granted    correct password — interior reveal plays, scroll unlocks
+ *
+ * Per-office colour theme (set via shortcode attrs as inline CSS vars
+ * on the root, defaults shown):
+ *   --bpo-cine-accent-rgb: 255, 195, 100   (warm gold)
+ *   --bpo-cine-exterior:   <bg image url or gradient>
+ *   --bpo-cine-interior:   <bg image url or gradient>
+ */
+
+.bpo-cine {
+	--bpo-cine-zoom: 0;
+	--bpo-cine-accent-rgb: 255, 195, 100;
+	position: relative;
+	width: 100%;
+	height: 100vh;
+	overflow: hidden;
+	isolation: isolate;
+	background: #000;
+	color: #fff;
+}
+
+/* --- Background plates ---------------------------------------------- */
+.bpo-cine__bg {
+	position: absolute; inset: 0;
+	background-size: cover;
+	background-position: center;
+	will-change: opacity, transform;
+}
+.bpo-cine__bg--exterior {
+	z-index: 1;
+	background-image: var(--bpo-cine-exterior,
+		radial-gradient(ellipse at 50% 35%, #2a1810 0%, #0a0604 60%, #000 100%));
+	transform: scale(calc(1 + var(--bpo-cine-zoom) * 0.35));
+	opacity: 1;
+	transition: opacity 0.6s ease-out;
+}
+.bpo-cine__bg--interior {
+	z-index: 2;
+	background-image: var(--bpo-cine-interior,
+		radial-gradient(ellipse at 35% 40%, #d4a574 0%, #6b4423 30%, #2a1a0d 70%, #000 100%));
+	opacity: 0;
+	transform: scale(1.06);
+	transition: opacity 0.9s ease-out, transform 1.5s ease-out;
+}
+.bpo-cine.is-granted .bpo-cine__bg--exterior { opacity: 0; }
+.bpo-cine.is-granted .bpo-cine__bg--interior { opacity: 1; transform: scale(1); }
+
+/* --- Warm cinematic vignette --------------------------------------- */
+.bpo-cine__vignette {
+	position: absolute; inset: 0; z-index: 3;
+	pointer-events: none;
+	background:
+		radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.88) 100%),
+		radial-gradient(ellipse at 30% 20%, rgba(var(--bpo-cine-accent-rgb), 0.18) 0%, transparent 50%),
+		radial-gradient(ellipse at 70% 80%, rgba(var(--bpo-cine-accent-rgb), 0.10) 0%, transparent 60%);
+}
+
+/* --- Keypad stage (scales with zoom) ------------------------------- */
+.bpo-cine__stage {
+	position: absolute; inset: 0; z-index: 4;
+	display: flex; flex-direction: column;
+	align-items: center; justify-content: center;
+	gap: 28px;
+	/* Scale from 0.32 (distant) to 1.0 (fully zoomed in). */
+	transform: scale(calc(0.32 + var(--bpo-cine-zoom) * 0.68));
+	opacity: calc(0.5 + var(--bpo-cine-zoom) * 0.5);
+	transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+}
+.bpo-cine.is-granted .bpo-cine__stage {
+	opacity: 0;
+	transform: scale(1.15);
+	transition: opacity 0.6s ease-out, transform 0.8s ease-out;
+	pointer-events: none;
+}
+
+.bpo-cine__keypad {
+	width: 240px;
+	padding: 24px 22px 18px;
+	background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+	border: 1px solid rgba(var(--bpo-cine-accent-rgb), 0.30);
+	border-radius: 24px;
+	box-shadow:
+		0 30px 80px rgba(0, 0, 0, 0.6),
+		inset 0 1px 0 rgba(var(--bpo-cine-accent-rgb), 0.15);
+}
+.bpo-cine__display {
+	display: flex; justify-content: center; gap: 12px;
+	margin-bottom: 18px;
+	font-family: ui-monospace, monospace;
+	font-size: 22px; font-weight: 700;
+	letter-spacing: 0.18em;
+	color: rgba(var(--bpo-cine-accent-rgb), 0.95);
+	height: 28px;
+	transition: color 0.15s ease;
+}
+.bpo-cine__display .digit {
+	display: inline-block; width: 14px; text-align: center;
+	color: rgba(var(--bpo-cine-accent-rgb), 0.25);
+	transition: color 0.15s ease;
+}
+.bpo-cine__display .digit.is-filled {
+	color: rgba(var(--bpo-cine-accent-rgb), 0.95);
+}
+.bpo-cine.is-error .bpo-cine__display {
+	color: #ef494b;
+	animation: bpo-cine-shake 0.35s ease;
+}
+.bpo-cine.is-error .bpo-cine__display .digit { color: #ef494b; }
+@keyframes bpo-cine-shake {
+	0%, 100% { transform: translateX(0); }
+	25% { transform: translateX(-6px); }
+	75% { transform: translateX(6px); }
+}
+
+.bpo-cine__keys {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 8px;
+}
+.bpo-cine__key {
+	aspect-ratio: 1;
+	display: flex; align-items: center; justify-content: center;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(var(--bpo-cine-accent-rgb), 0.14);
+	border-radius: 10px;
+	font-family: var(--bpo-font-body, system-ui, sans-serif);
+	font-size: 20px; font-weight: 500;
+	color: rgba(var(--bpo-cine-accent-rgb), 0.7);
+	cursor: not-allowed;
+	user-select: none;
+	transition: background 0.15s ease, transform 0.1s ease, color 0.15s ease;
+}
+.bpo-cine.is-zoomed .bpo-cine__key { cursor: pointer; }
+.bpo-cine.is-zoomed .bpo-cine__key:hover {
+	background: rgba(var(--bpo-cine-accent-rgb), 0.16);
+	color: rgba(var(--bpo-cine-accent-rgb), 1);
+}
+.bpo-cine.is-zoomed .bpo-cine__key:active,
+.bpo-cine__key.is-pressed {
+	background: rgba(var(--bpo-cine-accent-rgb), 0.45);
+	color: #fff;
+	transform: scale(0.95);
+	box-shadow: 0 0 22px rgba(var(--bpo-cine-accent-rgb), 0.75);
+}
+
+/* --- "Access Granted" badge — shown briefly when password correct -- */
+.bpo-cine__granted {
+	padding: 10px 22px;
+	border: 1px solid rgba(var(--bpo-cine-accent-rgb), 0.6);
+	border-radius: 4px;
+	background: rgba(var(--bpo-cine-accent-rgb), 0.10);
+	font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+	font-weight: 700;
+	font-size: 18px;
+	letter-spacing: 0.32em;
+	color: rgb(var(--bpo-cine-accent-rgb));
+	text-transform: uppercase;
+	text-shadow:
+		0 0 12px rgba(var(--bpo-cine-accent-rgb), 0.9),
+		0 0 32px rgba(var(--bpo-cine-accent-rgb), 0.5);
+	box-shadow:
+		0 0 28px rgba(var(--bpo-cine-accent-rgb), 0.4),
+		inset 0 0 12px rgba(var(--bpo-cine-accent-rgb), 0.18);
+	opacity: 0;
+	transform: scale(0.9);
+	transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.bpo-cine.is-granted .bpo-cine__granted {
+	opacity: 1;
+	transform: scale(1);
+}
+
+/* --- Hint text shown while keypad is distant ----------------------- */
+.bpo-cine__hint {
+	position: absolute;
+	bottom: 8vh; left: 50%;
+	transform: translateX(-50%);
+	z-index: 5;
+	font-size: 11px;
+	letter-spacing: 0.32em;
+	text-transform: uppercase;
+	color: rgba(var(--bpo-cine-accent-rgb), 0.7);
+	opacity: calc(1 - var(--bpo-cine-zoom));
+	transition: opacity 0.3s ease;
+	pointer-events: none;
+}
+.bpo-cine.is-zoomed .bpo-cine__hint,
+.bpo-cine.is-granted .bpo-cine__hint { opacity: 0; }
+.bpo-cine__hint-2 {
+	position: absolute;
+	bottom: 8vh; left: 50%;
+	transform: translateX(-50%);
+	z-index: 5;
+	font-size: 11px;
+	letter-spacing: 0.32em;
+	text-transform: uppercase;
+	color: rgba(var(--bpo-cine-accent-rgb), 0.85);
+	opacity: 0;
+	transition: opacity 0.3s ease;
+	pointer-events: none;
+}
+.bpo-cine.is-zoomed .bpo-cine__hint-2 { opacity: 1; }
+.bpo-cine.is-granted .bpo-cine__hint-2 { opacity: 0; }
+
+/* --- Hero content (revealed after access granted) ------------------ */
+.bpo-cine__content {
+	position: absolute; inset: 0; z-index: 5;
+	display: flex; flex-direction: column;
+	align-items: center; justify-content: center;
+	text-align: center;
+	padding: 32px;
+	opacity: 0;
+	transform: translateY(16px);
+	transition: opacity 0.7s ease 0.4s, transform 0.9s ease 0.4s;
+	pointer-events: none;
+}
+.bpo-cine.is-granted .bpo-cine__content {
+	opacity: 1;
+	transform: translateY(0);
+}
+.bpo-cine.is-granted .bpo-cine__content > * { pointer-events: auto; }
+
+.bpo-cine__eyebrow {
+	font-size: 11px; letter-spacing: 0.35em; text-transform: uppercase;
+	color: rgba(var(--bpo-cine-accent-rgb), 0.85);
+	margin: 0 0 24px;
+}
+.bpo-cine__title {
+	font-family: var(--bpo-font-display, Georgia, serif);
+	font-style: italic;
+	font-size: clamp(48px, 8vw, 96px);
+	line-height: 0.95;
+	margin: 0 0 20px;
+	color: #fff;
+	max-width: 16ch;
+}
+.bpo-cine__title em {
+	color: var(--bpo-brand, #ef494b);
+	font-style: italic;
+}
+.bpo-cine__lede {
+	font-size: 16px;
+	line-height: 1.6;
+	color: rgba(255, 255, 255, 0.82);
+	max-width: 34rem;
+	margin: 0 0 32px;
+}
+.bpo-cine__ctas { display: inline-flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.bpo-cine__btn {
+	display: inline-block;
+	padding: 14px 28px;
+	border-radius: 999px;
+	font-size: 14px; font-weight: 500;
+	text-decoration: none;
+	transition: transform 0.2s ease;
+}
+.bpo-cine__btn:hover { transform: scale(1.05); }
+.bpo-cine__btn--solid {
+	background: var(--bpo-brand, #ef494b);
+	color: #fff;
+	box-shadow: 0 8px 32px rgba(239, 73, 75, 0.4);
+}
+.bpo-cine__btn--outline {
+	background: transparent;
+	color: #fff;
+	box-shadow: inset 0 0 0 1.5px rgba(var(--bpo-cine-accent-rgb), 0.75);
+}
+
+/* --- Reduced-motion fallback --------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+	.bpo-cine__bg, .bpo-cine__stage { transition: none; }
+	.bpo-cine__bg--exterior { opacity: 0; transform: none; }
+	.bpo-cine__bg--interior { opacity: 1; transform: none; }
+	.bpo-cine__stage { display: none; }
+	.bpo-cine__content { opacity: 1; transform: none; pointer-events: auto; }
+	.bpo-cine__hint, .bpo-cine__hint-2 { display: none; }
+}
+body { margin:0; padding:0; font-family: var(--bpo-font-body); background:#000; color:#fff; }
+.toolbar { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; gap: 6px; padding: 8px 10px; border-radius: 999px; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15); }
+.toolbar button { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 999px; font: 500 12px/1 system-ui, sans-serif; cursor: pointer; }
+.toolbar button:hover { background: rgba(239,73,75,0.4); border-color: #ef494b; }
+.toolbar .label { padding: 6px 8px; font: 500 11px/1 system-ui; color: #94a3b8; }
+.placeholder-orange { background: radial-gradient(ellipse at 30% 50%, #5a2e0a 0%, #2a1408 50%, #000 100%) !important; }
+.placeholder-blue   { background: radial-gradient(ellipse at 50% 50%, #1e3a5f 0%, #0a1525 50%, #000 100%) !important; }
+.placeholder-modern { background: radial-gradient(ellipse at 60% 50%, #2d2d3f 0%, #15151f 50%, #000 100%) !important; }
+</style>
+</head>
+<body class="bpo-page">
+<section class="bpo-cine" id="hero" data-bpo-password="1234" style="--bpo-cine-accent-rgb: 255, 195, 100;">
+  <div class="bpo-cine__bg bpo-cine__bg--exterior" id="bg-exterior"></div>
+  <div class="bpo-cine__bg bpo-cine__bg--interior" id="bg-interior"></div>
+  <div class="bpo-cine__vignette" aria-hidden="true"></div>
+  <div class="bpo-cine__stage">
+    <div class="bpo-cine__keypad">
+      <div class="bpo-cine__display"><span class="digit">·</span><span class="digit">·</span><span class="digit">·</span><span class="digit">·</span></div>
+      <div class="bpo-cine__keys">
+        <button type="button" class="bpo-cine__key" data-value="1">1</button>
+        <button type="button" class="bpo-cine__key" data-value="2">2</button>
+        <button type="button" class="bpo-cine__key" data-value="3">3</button>
+        <button type="button" class="bpo-cine__key" data-value="4">4</button>
+        <button type="button" class="bpo-cine__key" data-value="5">5</button>
+        <button type="button" class="bpo-cine__key" data-value="6">6</button>
+        <button type="button" class="bpo-cine__key" data-value="7">7</button>
+        <button type="button" class="bpo-cine__key" data-value="8">8</button>
+        <button type="button" class="bpo-cine__key" data-value="9">9</button>
+        <button type="button" class="bpo-cine__key" data-value="*">*</button>
+        <button type="button" class="bpo-cine__key" data-value="0">0</button>
+        <button type="button" class="bpo-cine__key" data-value="#">#</button>
+      </div>
+    </div>
+    <div class="bpo-cine__granted">Access Granted</div>
+  </div>
+  <div class="bpo-cine__hint">Scroll to approach</div>
+  <div class="bpo-cine__hint-2">Enter the code &mdash; try 1234</div>
+  <div class="bpo-cine__content">
+    <p class="bpo-cine__eyebrow">A partnership unlocked</p>
+    <h1 class="bpo-cine__title">Welcome inside <em>BPO Firm</em>.</h1>
+    <p class="bpo-cine__lede">Calls. Chats. Social. AI assists. Every channel &mdash; orchestrated under one roof. Plug your stack in once; ship outcomes from day one.</p>
+    <div class="bpo-cine__ctas">
+      <a href="#" class="bpo-cine__btn bpo-cine__btn--solid">Book a discovery call</a>
+      <a href="#" class="bpo-cine__btn bpo-cine__btn--outline">See our work</a>
+    </div>
+  </div>
+</section>
+<div class="toolbar">
+  <span class="label">THEME</span>
+  <button data-theme="255,195,100">Warm gold</button>
+  <button data-theme="255,140,50">Orange</button>
+  <button data-theme="120,170,255">Blue</button>
+  <button data-theme="255,80,130">Social</button>
+  <button data-theme="160,130,200">Modern</button>
+  <span class="label">|</span>
+  <button id="reset">Reset</button>
+</div>
+<script>
+/* BPO Firm — Cinematic Hero (v2)
+ * Scroll-driven zoom + interactive password entry.
+ *
+ * Behaviour:
+ *  1. On page load, .bpo-cine sections register. Each one locks page
+ *     scroll while it's the active hero and drives a 0..1 zoom value
+ *     from wheel / touch deltas (same pattern as bpofirm-scroll-hero).
+ *  2. Once zoom hits 1.0, the keypad becomes interactive. Hint text
+ *     swaps from "Scroll to enter" -> "Enter the code".
+ *  3. Clicking the keypad buttons fills the 4-digit display.
+ *  4. When 4 digits are entered:
+ *       correct  -> .is-granted -> interior reveal + scroll unlocked
+ *       wrong    -> .is-error -> shake + clear, allow retry
+ *  5. Once granted, scroll behaves normally and the user proceeds to
+ *     the rest of the page.
+ *
+ * The expected password is read from data-bpo-password on the root
+ * (set by the PHP shortcode). Defaults to "1234".
+ */
+(function () {
+	'use strict';
+
+	var WHEEL_SENS    = 0.0012;
+	var TOUCH_SENS    = 0.006;
+	var ERROR_HOLD_MS = 700;
+
+	function clamp01(n) { return n < 0 ? 0 : n > 1 ? 1 : n; }
+
+	function init(root) {
+		if (root.__bpoCineInit) return;
+		root.__bpoCineInit = true;
+
+		var password = (root.getAttribute('data-bpo-password') || '1234').replace(/\D/g, '');
+		if (password.length !== 4) password = '1234';
+
+		var keys     = root.querySelectorAll('.bpo-cine__key');
+		var digits   = root.querySelectorAll('.bpo-cine__display .digit');
+		var state = {
+			zoom: 0,
+			zoomed: false,
+			granted: false,
+			entered: '',
+			touchStartY: 0,
+		};
+
+		function render() {
+			root.style.setProperty('--bpo-cine-zoom', state.zoom);
+			root.classList.toggle('is-zoomed', state.zoomed);
+			root.classList.toggle('is-granted', state.granted);
+		}
+
+		function setZoom(z) {
+			state.zoom = clamp01(z);
+			var wasZoomed = state.zoomed;
+			state.zoomed = state.zoom >= 1;
+			if (state.zoomed && !wasZoomed) {
+				resetEntered();
+			}
+			render();
+		}
+
+		function resetEntered() {
+			state.entered = '';
+			for (var i = 0; i < digits.length; i++) {
+				digits[i].classList.remove('is-filled');
+				digits[i].textContent = '·';
+			}
+		}
+
+		function pressKey(value) {
+			if (state.granted || !state.zoomed) return;
+			if (state.entered.length >= 4) return;
+			var idx = state.entered.length;
+			state.entered += value;
+			if (digits[idx]) {
+				digits[idx].classList.add('is-filled');
+				digits[idx].textContent = value;
+			}
+			if (state.entered.length === 4) {
+				if (state.entered === password) {
+					setTimeout(grant, 220);
+				} else {
+					flashError();
+				}
+			}
+		}
+
+		function grant() {
+			state.granted = true;
+			render();
+		}
+
+		function flashError() {
+			root.classList.add('is-error');
+			setTimeout(function () {
+				root.classList.remove('is-error');
+				resetEntered();
+			}, ERROR_HOLD_MS);
+		}
+
+		// --- Scroll-hijack: wheel + touch drive zoom while not granted
+		function onWheel(e) {
+			if (state.granted) return;
+			if (state.zoomed && e.deltaY < 0 && window.scrollY <= 5) {
+				// Scrolling up while at zoom=1 reverses out (rare; matches scroll-hero UX).
+				setZoom(0.95);
+				e.preventDefault();
+				return;
+			}
+			if (!state.zoomed) {
+				e.preventDefault();
+				setZoom(state.zoom + e.deltaY * WHEEL_SENS);
+			}
+			// At zoomed && deltaY > 0: do not preventDefault — allow page scroll past
+			// once granted. Until granted we still block to keep them at the keypad.
+			if (state.zoomed && !state.granted) {
+				e.preventDefault();
+			}
+		}
+
+		function onTouchStart(e) { state.touchStartY = e.touches[0].clientY; }
+		function onTouchMove(e) {
+			if (state.granted || !state.touchStartY) return;
+			var y = e.touches[0].clientY;
+			var dy = state.touchStartY - y;
+			if (state.zoomed && dy < -20 && window.scrollY <= 5) {
+				setZoom(0.95);
+				e.preventDefault();
+				return;
+			}
+			if (!state.zoomed) {
+				e.preventDefault();
+				setZoom(state.zoom + dy * TOUCH_SENS);
+				state.touchStartY = y;
+			} else {
+				e.preventDefault();
+			}
+		}
+		function onTouchEnd() { state.touchStartY = 0; }
+
+		function onScroll() {
+			if (!state.granted) window.scrollTo(0, 0);
+		}
+
+		// Wire up keypad clicks (always listening; pressKey gates on state).
+		for (var i = 0; i < keys.length; i++) {
+			(function (k) {
+				k.addEventListener('click', function () {
+					var v = k.getAttribute('data-value') || k.textContent.trim();
+					if (/^\d$/.test(v)) pressKey(v);
+				});
+			})(keys[i]);
+		}
+
+		window.addEventListener('wheel',      onWheel,      { passive: false });
+		window.addEventListener('touchstart', onTouchStart, { passive: false });
+		window.addEventListener('touchmove',  onTouchMove,  { passive: false });
+		window.addEventListener('touchend',   onTouchEnd);
+		window.addEventListener('scroll',     onScroll);
+
+		resetEntered();
+		render();
+
+		// Honour prefers-reduced-motion: skip the keypad gate entirely.
+		if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+			state.zoomed = true;
+			state.granted = true;
+			render();
+		}
+	}
+
+	function bootstrap() {
+		var nodes = document.querySelectorAll('.bpo-cine');
+		for (var i = 0; i < nodes.length; i++) init(nodes[i]);
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', bootstrap);
+	} else {
+		bootstrap();
+	}
+})();
+var hero = document.getElementById('hero');
+document.querySelectorAll('.toolbar [data-theme]').forEach(function (btn) {
+  btn.onclick = function () { hero.style.setProperty('--bpo-cine-accent-rgb', btn.getAttribute('data-theme')); };
+});
+document.getElementById('reset').onclick = function () { location.reload(); };
+</script>
+</body>
+</html>
